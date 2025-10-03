@@ -10,6 +10,7 @@ public class MecanumDriveExample extends OpMode {
     MecanumDriveMechanism drive = new MecanumDriveMechanism();;
     double forward, strafe, rotate;
     boolean fieldOriented = false;
+    boolean inverseStrafe = false;
 
     @Override
     public void init() {
@@ -25,6 +26,18 @@ public class MecanumDriveExample extends OpMode {
         // toggles field oriented on/off without having to hold it down
         if (gamepad1.a) {
             fieldOriented = !fieldOriented;
+        }
+
+        if (gamepad1.x) {
+            inverseStrafe = !inverseStrafe;
+        }
+
+        telemetry.addData("fieldOriented", String.valueOf(fieldOriented));
+        telemetry.addData("inverseStrafe", String.valueOf(inverseStrafe));
+        telemetry.update();
+
+        if (inverseStrafe) {
+            strafe = -strafe;
         }
 
         if (fieldOriented) {
