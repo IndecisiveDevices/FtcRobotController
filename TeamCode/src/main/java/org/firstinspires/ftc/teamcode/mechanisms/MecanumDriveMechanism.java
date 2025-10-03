@@ -14,11 +14,6 @@ public class MecanumDriveMechanism {
     private DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private IMU imu;
 
-    public enum ReversedWheelSide {
-        Right,
-        Left
-    }
-
     /*
     The motors on the robot in relation to the controller were put on backwards
      */
