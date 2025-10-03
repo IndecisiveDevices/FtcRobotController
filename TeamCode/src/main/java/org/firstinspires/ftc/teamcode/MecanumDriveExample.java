@@ -19,7 +19,11 @@ public class MecanumDriveExample extends OpMode {
 
     @Override
     public void loop() {
-        forward = gamepad1.left_stick_y;
+        // Left stick gives us a negative value when pushed forward (up) and positive when pulled
+        // back (down). We want to flip this so pressing forward makes the bot move forward
+        // (positive value) instead of backwards (negative value).
+        forward = -gamepad1.left_stick_y;
+
         strafe = gamepad1.left_stick_x;
         rotate = gamepad1.right_stick_x;
 
@@ -28,17 +32,9 @@ public class MecanumDriveExample extends OpMode {
             fieldOriented = !fieldOriented;
         }
 
-        if (gamepad1.x) {
-            inverseStrafe = !inverseStrafe;
-        }
-
         telemetry.addData("fieldOriented", String.valueOf(fieldOriented));
         telemetry.addData("inverseStrafe", String.valueOf(inverseStrafe));
         telemetry.update();
-
-        if (inverseStrafe) {
-            strafe = -strafe;
-        }
 
         if (fieldOriented) {
             drive.driveFieldOriented(forward, strafe, rotate);

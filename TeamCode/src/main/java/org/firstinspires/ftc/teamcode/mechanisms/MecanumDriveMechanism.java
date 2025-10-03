@@ -14,14 +14,22 @@ public class MecanumDriveMechanism {
     private DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private IMU imu;
 
+    public enum ReversedWheelSide {
+        Right,
+        Left
+    }
+
+    /*
+    The motors on the robot in relation to the controller were put on backwards
+     */
     public void init(HardwareMap hardwareMap) {
         frontLeftMotor = hardwareMap.dcMotor.get("frontLeft_motor");
         frontRightMotor = hardwareMap.dcMotor.get("frontRight_motor");
         backLeftMotor = hardwareMap.dcMotor.get("rearLeft_motor");
         backRightMotor = hardwareMap.dcMotor.get("rearRight_motor");
 
-        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
 
         Arrays.asList(frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor)
               .forEach(motor -> motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER));
@@ -30,7 +38,7 @@ public class MecanumDriveMechanism {
 
         RevHubOrientationOnRobot hubOrientation = new RevHubOrientationOnRobot(
             RevHubOrientationOnRobot.LogoFacingDirection.UP,
-            RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+            RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD
         );
 
         imu.initialize(new IMU.Parameters(hubOrientation));
@@ -42,9 +50,8 @@ public class MecanumDriveMechanism {
         double frontRightPower = forward - strafe - rotate;
         double backRightPower = forward + strafe - rotate;
 
-
         double maxPower = 1.0;
-        double maxSpeed = .5;
+        double maxSpeed = .4;
 
         maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
         maxPower = Math.max(maxPower, Math.abs(backLeftPower));
