@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.mechanisms.MecanumDriveMechanism;
 public class MecanumDriveExample extends OpMode {
     MecanumDriveMechanism drive = new MecanumDriveMechanism();;
     double forward, strafe, rotate;
-    boolean fieldOriented = true;
+    boolean fieldOriented = false;
 
     @Override
     public void init() {

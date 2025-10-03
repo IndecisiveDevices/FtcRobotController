@@ -43,18 +43,17 @@ public class MecanumDriveMechanism {
         double backRightPower = forward + strafe - rotate;
 
         double maxPower = 1.0;
-        double setSpeed = 1.0;
+        double maxSpeed = 1.0;
 
-        maxPower = Math.max(Math.abs(frontLeftPower), maxPower);
-        maxPower = Math.max(Math.abs(backLeftPower), maxPower);
-        maxPower = Math.max(Math.abs(frontRightPower), maxPower);
-        maxPower = Math.max(Math.abs(backRightPower), maxPower);
+        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
+        maxPower = Math.max(maxPower, Math.abs(backLeftPower));
+        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
+        maxPower = Math.max(maxPower, Math.abs(backRightPower));
 
-        frontLeftMotor.setPower(setSpeed * (frontLeftPower / maxPower));
-        backLeftMotor.setPower(setSpeed * (backLeftPower / maxPower));
-        frontRightMotor.setPower(setSpeed * (frontRightPower / maxPower));
-        backRightMotor.setPower(setSpeed * (backRightPower / maxPower));
-
+        frontLeftMotor.setPower(maxSpeed * (frontLeftPower / maxPower));
+        backLeftMotor.setPower(maxSpeed * (backLeftPower / maxPower));
+        frontRightMotor.setPower(maxSpeed * (frontRightPower / maxPower));
+        backRightMotor.setPower(maxSpeed * (backRightPower / maxPower));
     }
 
     public void driveFieldOriented(double forward, double strafe, double rotate) {
