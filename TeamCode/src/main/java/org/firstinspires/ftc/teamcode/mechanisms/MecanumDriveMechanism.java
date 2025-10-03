@@ -13,6 +13,7 @@ public class MecanumDriveMechanism {
 
     private DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private IMU imu;
+    private double throttle = 0.5;
 
     /*
     The motors on the robot in relation to the controller were put on backwards
@@ -46,17 +47,16 @@ public class MecanumDriveMechanism {
         double backRightPower = forward + strafe - rotate;
 
         double maxPower = 1.0;
-        double maxSpeed = .4;
 
         maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
         maxPower = Math.max(maxPower, Math.abs(backLeftPower));
         maxPower = Math.max(maxPower, Math.abs(frontRightPower));
         maxPower = Math.max(maxPower, Math.abs(backRightPower));
 
-        frontLeftMotor.setPower(maxSpeed * (frontLeftPower / maxPower));
-        backLeftMotor.setPower(maxSpeed * (backLeftPower / maxPower));
-        frontRightMotor.setPower(maxSpeed * (frontRightPower / maxPower));
-        backRightMotor.setPower(maxSpeed * (backRightPower / maxPower));
+        frontLeftMotor.setPower(throttle * (frontLeftPower / maxPower));
+        backLeftMotor.setPower(throttle * (backLeftPower / maxPower));
+        frontRightMotor.setPower(throttle * (frontRightPower / maxPower));
+        backRightMotor.setPower(throttle * (backRightPower / maxPower));
     }
 
     public void driveFieldOriented(double forward, double strafe, double rotate) {
@@ -71,5 +71,16 @@ public class MecanumDriveMechanism {
         double correctedStrafe = joystickSpeed * Math.cos(correctedAngle);
 
         drive(correctedForward, correctedStrafe, rotate);
+    }
+
+    public void bumpSpeed(double changeBy) {
+        double newThrottle = throttle + changeBy;
+        if (newThrottle >= 0.1 && newThrottle <= 1.0) {
+            throttle = newThrottle;
+        }
+    }
+
+    public double getSpeed() {
+        return throttle;
     }
 }

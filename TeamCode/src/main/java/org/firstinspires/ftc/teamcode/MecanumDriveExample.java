@@ -32,8 +32,16 @@ public class MecanumDriveExample extends OpMode {
             fieldOriented = !fieldOriented;
         }
 
+        if (gamepad1.dpad_up) {
+            drive.bumpSpeed(0.1);
+        }
+        if (gamepad1.dpad_down) {
+            drive.bumpSpeed(-0.1);
+        }
+
         telemetry.addData("fieldOriented", String.valueOf(fieldOriented));
         telemetry.addData("inverseStrafe", String.valueOf(inverseStrafe));
+        telemetry.addData("current speed", String.valueOf(drive.getSpeed()));
         telemetry.update();
 
         if (fieldOriented) {
