@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.Arrays;
 
-public class MecanumDriveMechanism {
+public class MecanumDrive {
 
     private DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private IMU imu;

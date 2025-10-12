@@ -2,19 +2,22 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import org.firstinspires.ftc.teamcode.mechanisms.MecanumDriveMechanism;
+import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
+import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
 
 
-@TeleOp(name="Mecanum Drive, field or bot oriented", group="TeleOp Drive")
-public class MecanumDriveExample extends OpMode {
-    MecanumDriveMechanism drive = new MecanumDriveMechanism();;
+@TeleOp(name="Ed's Decode Example", group="TeleOp Drive")
+public class DecodeCompExample extends OpMode {
+    MecanumDrive drive = new MecanumDrive();
+    Shooter shooter = new Shooter();
+
     double forward, strafe, rotate;
     boolean fieldOriented = false;
-    boolean inverseStrafe = false;
 
     @Override
     public void init() {
         drive.init(hardwareMap);
+        shooter.init(hardwareMap);
     }
 
     @Override
@@ -23,7 +26,6 @@ public class MecanumDriveExample extends OpMode {
         // back (down). We want to flip this so pressing forward makes the bot move forward
         // (positive value) instead of backwards (negative value).
         forward = -gamepad1.left_stick_y;
-
         strafe = gamepad1.left_stick_x;
         rotate = gamepad1.right_stick_x;
 
@@ -31,7 +33,6 @@ public class MecanumDriveExample extends OpMode {
         if (gamepad1.a) {
             fieldOriented = !fieldOriented;
         }
-
         if (gamepad1.dpad_up) {
             drive.bumpSpeed(0.1);
         }
@@ -40,7 +41,6 @@ public class MecanumDriveExample extends OpMode {
         }
 
         telemetry.addData("fieldOriented", String.valueOf(fieldOriented));
-        telemetry.addData("inverseStrafe", String.valueOf(inverseStrafe));
         telemetry.addData("current speed", String.valueOf(drive.getSpeed()));
         telemetry.update();
 
@@ -48,6 +48,42 @@ public class MecanumDriveExample extends OpMode {
             drive.driveFieldOriented(forward, strafe, rotate);
         } else {
             drive.drive(forward, strafe, rotate);
+        }
+
+        if (gamepad1.left_bumper) {
+            readyIntakeSlot();
+        } else {
+            readyShot();
+        }
+
+        shooter.displayActiveSlots();
+
+        if (gamepad1.right_trigger >= 0.03) {
+            shooter.shoot();
+        }
+    }
+
+    public void readyIntakeSlot() {
+        if (gamepad1.x) {
+            shooter.moveSlotToIntake(Shooter.CarouselSlot.X);
+        }
+        else if (gamepad1.y) {
+            shooter.moveSlotToIntake(Shooter.CarouselSlot.Y);
+        }
+        else if (gamepad1.b) {
+            shooter.moveSlotToIntake(Shooter.CarouselSlot.B);
+        }
+    }
+
+    public void readyShot() {
+        if (gamepad1.x) {
+            shooter.moveSlotToShoot(Shooter.CarouselSlot.X);
+        }
+        else if (gamepad1.y) {
+            shooter.moveSlotToShoot(Shooter.CarouselSlot.Y);
+        }
+        else if (gamepad1.b) {
+            shooter.moveSlotToShoot(Shooter.CarouselSlot.B);
         }
     }
 }
