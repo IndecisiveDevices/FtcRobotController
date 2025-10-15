@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 import org.firstinspires.ftc.teamcode.mechanisms.MecanumDrive;
 import org.firstinspires.ftc.teamcode.mechanisms.Shooter;
 
@@ -13,11 +14,12 @@ public class DecodeCompExample extends OpMode {
 
     double forward, strafe, rotate;
     boolean fieldOriented = false;
+    boolean readColorSensor1;
 
     @Override
     public void init() {
-        drive.init(hardwareMap);
-        shooter.init(hardwareMap);
+        drive.init(hardwareMap, telemetry);
+        shooter.init(hardwareMap, telemetry);
     }
 
     @Override
@@ -61,6 +63,21 @@ public class DecodeCompExample extends OpMode {
         if (gamepad1.right_trigger >= 0.03) {
             shooter.shoot();
         }
+
+        // test color
+        if (gamepad1.dpad_left) {
+            readColorSensor1 = true;
+        }
+        if (gamepad1.dpad_right) {
+            readColorSensor1 = false;
+        }
+
+        if (readColorSensor1) {
+            shooter.readColorSensor1();
+        } else {
+            shooter.readColorSensor0();
+        }
+
     }
 
     public void readyIntakeSlot() {

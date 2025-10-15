@@ -3,9 +3,6 @@ package org.firstinspires.ftc.teamcode.mechanisms;
 
 import static android.os.SystemClock.sleep;
 
-import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
-
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -13,6 +10,7 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.Arrays;
 
@@ -42,14 +40,25 @@ public class Shooter {
     /*************************************
      * Color Sensors
      ************************************/
-    NormalizedColorSensor colorSensor1, colorSensor2;
+    NormalizedColorSensor colorSensor0, colorSensor1;
     double hue;
 
-    public void init(HardwareMap hardwareMap) {
+
+    /*************************************
+     * Telemetry
+     ************************************/
+    Telemetry telemetry = null;
+
+    public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+        this.telemetry = telemetry;
         carousel = hardwareMap.get(Servo.class, "carousel");
         kicker = hardwareMap.get(Servo.class, "kicker");
-        colorSensor1 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor");
-        colorSensor2 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor2");
+
+        colorSensor0 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor0");
+        colorSensor0.setGain(7);
+
+        colorSensor1 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor1");
+        colorSensor1.setGain(7);
 
         carousel.setPosition(0.5); // we'll start in middle position.
         kicker.setPosition(KICKER_DOWN_POS);
@@ -101,8 +110,8 @@ public class Shooter {
         // now set a double for the smallest distance from the sorted array
         double minDistance = distances[0];
 
-        CarouselSlot intakeSlot = null;
-        CarouselSlot shootingSlot = null;
+        CarouselSlot intakeSlot = CarouselSlot.X;
+        CarouselSlot shootingSlot = CarouselSlot.Y;
 
         if (minDistance == xDistance) {
             intakeSlot = CarouselSlot.X;
@@ -123,10 +132,18 @@ public class Shooter {
         telemetry.update();
     }
 
-    private void readColor() {
+    public void readColorSensor0() {
+        readColor(colorSensor0);
+    }
+
+    public void readColorSensor1() {
+        readColor(colorSensor1);
+    }
+
+    private void readColor(NormalizedColorSensor colorSensor) {
         // TODO: use the 2 color sensors
-        telemetry.addData("Light Detected", ((OpticalDistanceSensor) colorSensor1).getLightDetected());
-        NormalizedRGBA colors = colorSensor1.getNormalizedColors();
+        telemetry.addData("Light Detected", ((OpticalDistanceSensor) colorSensor).getLightDetected());
+        NormalizedRGBA colors = colorSensor.getNormalizedColors();
         hue = JavaUtil.colorToHue(colors.toColor()); // <------ New code
 
         //Determining the amount of red, green, and blue
@@ -140,8 +157,7 @@ public class Shooter {
         telemetry.addData("Value", "%.3f", JavaUtil.colorToValue(colors.toColor()));
         telemetry.addData("Alpha", "%.3f", colors.alpha);
 
-        String color = "";
-
+        String color;
         if(hue < 30){
             color = "Red";
         }
@@ -163,7 +179,6 @@ public class Shooter {
         else{
             color = "Red";
         }
-
 
         telemetry.addData("Color Hue", color);
 
