@@ -132,14 +132,6 @@ public class Shooter {
         telemetry.update();
     }
 
-    public void readColorSensor0() {
-        readColor(colorSensor0);
-    }
-
-    public void readColorSensor1() {
-        readColor(colorSensor1);
-    }
-
     private void readColor(NormalizedColorSensor colorSensor) {
         // TODO: use the 2 color sensors
         telemetry.addData("Light Detected", ((OpticalDistanceSensor) colorSensor).getLightDetected());
@@ -158,43 +150,56 @@ public class Shooter {
         telemetry.addData("Alpha", "%.3f", colors.alpha);
 
         String color;
-        if(hue < 30){
-            color = "Red";
-        }
-        else if (hue < 60) {
-            color = "Orange";
-        }
-        else if (hue < 90){
-            color = "Yellow";
-        }
-        else if (hue < 150){
-            color = "Green";
-        }
-        else if (hue < 225){
-            color = "Blue";
-        }
-        else if (hue < 350){
-            color = "Purple";
-        }
-        else{
-            color = "Red";
-        }
+        if      (hue < 30) color = "Red";
+        else if (hue < 60)  color = "Orange";
+        else if (hue < 90) color = "Yellow";
+        else if (hue < 150) color = "Green";
+        else if (hue < 225) color = "Blue";
+        else if (hue < 350) color = "Purple";
+        else color = "Red";
 
         telemetry.addData("Color Hue", color);
 
-        //now we determine if the color hue is closer to green or purple
-        double greenDistance = Math.abs(hue - 150);
-        double purpleDistance = Math.abs(hue - 225);
+        telemetry.addData("Color is closest to", getClosestClassificationColor());
+    }
 
-        // now we can compare the two distances and determine which is the smallest
-        if (greenDistance < purpleDistance){
-            telemetry.addData("Color is closest to", "Green");
-        }
-        else{
-            telemetry.addData("Color is closest to", "Purple");
+    public String getClosestClassificationColor() {
+        // Determine if colorSensor0 or colorSensor1 should be used for classification
+        // based on which one has the highest light detected
+        NormalizedRGBA color1 = colorSensor0.getNormalizedColors();
+        NormalizedRGBA color2 = colorSensor1.getNormalizedColors();
+        double hue;
+        if (color1.alpha > color2.alpha) {
+            hue = JavaUtil.colorToHue(color1.toColor());
+        } else {
+            hue = JavaUtil.colorToHue(color2.toColor());
         }
 
-        telemetry.update();
+        // Define the target hue values
+        double greenTargetHue = 150;
+        double purpleTargetHue = 225;
+
+        // Calculate the shortest distance on a circle for Green
+        double shortestGreenDistance = getShortest360Distance(hue, greenTargetHue);
+
+        // Calculate the shortest distance on a circle for Purple
+        double shortestPurpleDistance = getShortest360Distance(hue, purpleTargetHue);
+
+        telemetry.addData("Shortest Green Dist", "%.2f", shortestGreenDistance);
+        telemetry.addData("Shortest Purple Dist", "%.2f", shortestPurpleDistance);
+
+        // now we can compare the two shortest distances
+        if (shortestGreenDistance < shortestPurpleDistance){
+            return "Green";
+        }
+
+        return "Purple";
+    }
+
+    private double getShortest360Distance(double readingHue, double targetHue) {
+        double dist1 = Math.abs(readingHue - targetHue);
+        double dist2 = 360 - dist1; // The wrap-around distance
+        return Math.min(dist1, dist2);
     }
 
 }

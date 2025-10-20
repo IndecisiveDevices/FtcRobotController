@@ -44,7 +44,6 @@ public class DecodeCompExample extends OpMode {
 
         telemetry.addData("fieldOriented", String.valueOf(fieldOriented));
         telemetry.addData("current speed", String.valueOf(drive.getSpeed()));
-        telemetry.update();
 
         if (fieldOriented) {
             drive.driveFieldOriented(forward, strafe, rotate);
@@ -65,19 +64,7 @@ public class DecodeCompExample extends OpMode {
         }
 
         // test color
-        if (gamepad1.dpad_left) {
-            readColorSensor1 = true;
-        }
-        if (gamepad1.dpad_right) {
-            readColorSensor1 = false;
-        }
-
-        if (readColorSensor1) {
-            shooter.readColorSensor1();
-        } else {
-            shooter.readColorSensor0();
-        }
-
+        telemetry.addData("Color at intake is closer to", shooter.getClosestClassificationColor());
     }
 
     public void readyIntakeSlot() {
