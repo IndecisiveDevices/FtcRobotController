@@ -1,11 +1,17 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
+import android.hardware.Sensor;
+
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @TeleOp(name = "Decode2025RobotCode_TeleOp", group = "Robot")
 public class Decode2025RobotCode_TeleOp extends OpMode {
@@ -15,20 +21,49 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     // can be used to determine robot orientation (gyro)
     private IMU imu;
 
+    // Servos (carousel, kicker)
+    private Servo carousel, kicker;
+
+    // Shooter & Intake Motors
+    private DcMotor shooterMotor, intakeMotor;
+
+    // Color & Touch Sensors
+    private ColorSensor colorSensor0, colorSensor1;
+    private TouchSensor touchSensor0;
+
+    // Lift Motors
+    private DcMotor liftMotor0, liftMotor1;
+
     @Override
     public void init() {
         initDriveMotors();
         initImu();
         initSensors();
         initServos();
+        initShooterMotors();
+        initLiftMotors();
+    }
+
+    private void initLiftMotors() {
+        liftMotor0 = hardwareMap.get(DcMotor.class, "liftMotor0");
+        liftMotor1 = hardwareMap.get(DcMotor.class, "liftMotor1");
+    }
+
+    private void initShooterMotors() {
+        shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
     }
 
     private void initServos() {
+        carousel = hardwareMap.get(Servo.class, "carousel");
+        kicker = hardwareMap.get(Servo.class, "kicker");
 
     }
 
     private void initSensors() {
-
+        colorSensor0 = hardwareMap.get(ColorSensor.class, "colorSensor0");
+        colorSensor1 = hardwareMap.get(ColorSensor.class, "colorSensor1");
+        touchSensor0 = hardwareMap.get(TouchSensor.class, "touchSensor0");
     }
 
     private void initImu() {
@@ -80,8 +115,17 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     public void loop() {
         double forward = -gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
-        double rotate = gamepad1. right_stick_x;
+        double rotate = gamepad1.right_stick_x;
 
         drive(forward, strafe, rotate);
+        carouselPosition();
+        telemetry.update();
+    }
+
+    private void carouselPosition() {
+        // we need to add code here to slowly manually set the carousel's position using the gamepad
+        // so we know what values to set our positions to.
+        // this will always return the last value that you gave it for carousel.setPosition(double value)
+        telemetry.addData("carousel position", "%.3f", carousel.getPosition());
     }
 }
