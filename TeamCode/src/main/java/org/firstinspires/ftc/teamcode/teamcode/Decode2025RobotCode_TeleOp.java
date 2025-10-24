@@ -117,10 +117,14 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         double strafe = gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
 
-        drive(forward, strafe, rotate);
+       // drive(forward, strafe, rotate);
         carouselPosition();
         telemetry.update();
     }
+
+    // create Intake and Shooting positions for the carousel A, B, and C positions (2 each)
+    // they should be of type "double".  Example:  double someName = 1.0;
+
 
     private void carouselPosition() {
         // we need to add code here to slowly manually set the carousel's position using the gamepad
