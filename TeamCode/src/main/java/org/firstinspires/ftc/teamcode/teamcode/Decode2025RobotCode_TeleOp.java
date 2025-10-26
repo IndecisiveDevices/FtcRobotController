@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 @TeleOp(name = "Decode2025RobotCode_TeleOp", group = "Robot")
 public class Decode2025RobotCode_TeleOp extends OpMode {
+
     // Drive Motors
     private DcMotor frontLeftDrive, frontRightDrive, rearLeftDrive, rearRightDrive;
 
@@ -117,19 +118,52 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         double strafe = gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
 
-       // drive(forward, strafe, rotate);
+        drive(forward, strafe, rotate);
+
+        if (gamepad1.right_bumper){
+            moveCarouselClockwise();
+        } else if (gamepad1.left_bumper){
+            moveCarouselCounterClockwise();
+        }
         carouselPosition();
         telemetry.update();
     }
 
     // create Intake and Shooting positions for the carousel A, B, and C positions (2 each)
     // they should be of type "double".  Example:  double someName = 1.0;
+    double carouselPositionAintake = 0.968;
+    double carouselPositionBintake = 0.482;
+    double carouselPositionCintake = 0.016;
 
+    double carouselPositionBshooter = 0.000;
+    double carouselPositionCshooter = 0.929;
+    double carouselPositionAshooter = 0.454;
 
     private void carouselPosition() {
+        if (gamepad1.b) {
+            carousel.setPosition(carouselPositionAintake);
+        } else if (gamepad1.x) {
+            carousel.setPosition(carouselPositionCintake);
+        }
         // we need to add code here to slowly manually set the carousel's position using the gamepad
         // so we know what values to set our positions to.
         // this will always return the last value that you gave it for carousel.setPosition(double value)
         telemetry.addData("carousel position", "%.3f", carousel.getPosition());
     }
+
+    double currentCarouselPosition = 0.5;
+    public void moveCarouselClockwise() {
+        currentCarouselPosition += 0.001;
+        currentCarouselPosition = Math.min(currentCarouselPosition, 1.0);
+        carousel.setPosition(currentCarouselPosition);
+        telemetry.addData("Current Carousel Position", currentCarouselPosition);
+    }
+
+    public void moveCarouselCounterClockwise() {
+        currentCarouselPosition -= 0.001;
+        currentCarouselPosition = Math.max(currentCarouselPosition, 0.0);
+        carousel.setPosition(currentCarouselPosition);
+        telemetry.addData("Current Carousel Position", currentCarouselPosition);
+    }
+
 }
