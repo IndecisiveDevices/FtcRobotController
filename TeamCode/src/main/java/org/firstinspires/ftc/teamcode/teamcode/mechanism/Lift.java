@@ -21,13 +21,23 @@ public class Lift {
 
     }
 
-    // Motors + Sensor
+    // Have motors move with positive power until
+    // touch sensor is pressed.
+    // uses:
+    //  - liftMotor0/1
+    //      .setPower()
+    //  - touchSensor0
+    //      .isPressed()
     public void liftUp() {
 
     }
 
-    // Motors only. We
+    // Have motor move down until liftMotor0 or liftMotor1 is at start position.
+    // uses:
+    //  - liftMotor0/1
+    //      .setPower()
+    //
     public void liftDown() {
-
+        // set liftMotor0 and liftMotor1
     }
 }

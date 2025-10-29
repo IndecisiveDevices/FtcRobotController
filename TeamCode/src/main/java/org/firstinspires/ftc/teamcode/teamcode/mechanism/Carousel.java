@@ -3,25 +3,124 @@ package org.firstinspires.ftc.teamcode.teamcode.mechanism;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 public class Carousel {
-    // Servos (carousel)
-    private Servo carousel;
+    // Servos (carousel, kicker)
+    private Servo carousel, kicker;
 
     // Color & Touch Sensors
     private ColorSensor colorSensor0, colorSensor1;
 
+    // Shooter & Intake Motors
+    private DcMotor shooterMotor, intakeMotor;
+
     // create Intake and Shooting positions for the carousel A, B, and C positions (2 each)
-    private final double carouselPositionAintake = 0.968;
-    private final double carouselPositionAshooter = 0.454;
+    private final double A_INTAKE_POSITION = 0.968;
+    private final double B_INTAKE_POSITION = 0.482;
+    private final double C_INTAKE_POSITION = 0.016;
 
-    private final double carouselPositionBintake = 0.482;
-    private final double carouselPositionBshooter = 0.000;
+    private final double A_SHOOTING_POSITION = 0.454;
+    private final double B_SHOOTING_POSITION = 0.000;
+    private final double C_SHOOTING_POSITION = 0.929;
 
-    private final double carouselPositionCintake = 0.016;
-    private final double carouselPositionCshooter = 0.929;
+    // This is how you can create an "instance" of a Slot
+    private Slot slotA = new Slot(A_INTAKE_POSITION, A_SHOOTING_POSITION, "A");
+    private Slot slotB = new Slot(B_INTAKE_POSITION, B_SHOOTING_POSITION, "B");
+    private Slot slotC = new Slot(C_INTAKE_POSITION, C_SHOOTING_POSITION, "C");
+
+    public void initialize(HardwareMap hardwareMap) {
+        carousel = hardwareMap.get(Servo.class, "carousel");
+        kicker = hardwareMap.get(Servo.class, "kicker");
+
+        colorSensor0 = hardwareMap.get(ColorSensor.class, "colorSensor0");
+        colorSensor1 = hardwareMap.get(ColorSensor.class, "colorSensor1");
+
+        shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+    }
+
+    /**
+     * Turns on/off the intake motor.
+     */
+    boolean intakeMotorIsOn = false; // starts as off
+    public void turnOnIntakeMotorOnOff() {
+
+    }
+
+    /**
+     * Rotates carousel clockwise to the next Slot intake position.
+     * The order from lower (0.016) to higher (0.968)
+     *  Slot C  --> Slot B --> Slot A
+     */
+    public void nextRightIntakePosition() {
+        double currentPosition = carousel.getPosition();
+        Slot nextSlot = null;
+
+        // We want to move clockwise (right) to the next position
+        // so that means we need to order our if/else condition to
+        // evaluate the smallest intake positions first.
+        // Intake positions are
+        // - 0.016 (C): if current servo position is less than this, move to this position C
+        // - 0.482 (B): if it is less than this, move to this position B
+        // - 0.968 (A): if it is less than this, move to this position A
+        if (currentPosition < slotC.intakePosition) {
+            nextSlot = slotC;
+        } else if (currentPosition < slotB.intakePosition) {
+            nextSlot = slotB;
+        } else { // Slot A is the right-most we can go to.
+            nextSlot = slotA;
+        }
+
+        telemetry.addData("Intake Set to Slot: ", nextSlot.name);
+    }
+
+    /**
+     * Rotates carousel counter-clockwise to the next Slot intake position.
+     * The order from lower (0.000) to higher (0.929)
+     *  Slot B <--  Slot A <-- Slot C
+     */
+    public void nextLeftIntakePosition() {
+
+    }
+
+    /**
+     * Rotates carousel counter-clockwise to the next Slot intake position.
+     * The order from lower (0.000) to higher (0.929)
+     *  Slot B <--  Slot A <-- Slot C
+     */
+    public void nextRightShootingPosition() {
+
+    }
+
+    public void nextLeftShootingPosition() {
+
+    }
+
+    public void setShootingPower(double shootingPower) {
+
+    }
+
+    public void showCarouselData() {
+        //array of slots
+        Slot[] slots = {slotA, slotB, slotC};
+
+        for (Slot slot : slots) {
+            telemetry.addLine("Slot: " + slot.name);
+            telemetry.addLine("  Color: " + slot.color.toString());
+            telemetry.addLine("  Ready for Intake: " + slot.readyForIntake());
+            telemetry.addLine("  Ready for Shot: " + slot.readyForShot());
+        }
+
+        // display if intake motor is on or off
+        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "ON" : "OFF"));
+
+    }
 
     /*****************************************************************************************
      * NEW CONCEPT: Enums (sounds like "ee-num")
@@ -65,53 +164,52 @@ public class Carousel {
      ****************************************************************************************/
     private class Slot {
         public final double intakePosition;
+        public final double shootingPosition;
         public final String name;
+        public ClassificationColor color;
 
-        public Slot(double intakePosition, String name) {
+        public Slot(double intakePosition, double shootingPosition, String name) {
             this.intakePosition = intakePosition;
+            this.shootingPosition = shootingPosition;
             this.name = name;
+            this.color = ClassificationColor.None;
+        }
+
+        public String readyForShot() {
+            if (carousel.getPosition() == this.shootingPosition) {
+                return "✅ Ready";
+            }
+            return "❌ No";
+        }
+
+        public String readyForIntake() {
+            if (carousel.getPosition() == this.intakePosition) {
+                return "✅ Ready";
+            }
+            return "❌ No";
         }
     }
-    // This is how you can create an "instance" of a Slot
-    private Slot slotA = new Slot(carouselPositionAintake, "A");
-    
-    public void initialize(HardwareMap hardwareMap) {
-        carousel = hardwareMap.get(Servo.class, "carousel");
-        colorSensor0 = hardwareMap.get(ColorSensor.class, "colorSensor0");
-        colorSensor1 = hardwareMap.get(ColorSensor.class, "colorSensor1");
+
+
+    /*----------------------------------------------------
+    The code below here is used to help determine the
+    shooting and intake positions when calibrating the
+    robot if the carousel hardware position changes.
+    ------------------------------------------------------ */
+    double testCarouselPosition = 0.5;
+    public void moveCarouselClockwiseSlowly() {
+        testCarouselPosition += 0.001;
+        testCarouselPosition = Math.min(testCarouselPosition, 1.0);
+
+        carousel.setPosition(testCarouselPosition);
+        telemetry.addData("Current Carousel Position", testCarouselPosition);
     }
 
-    public void nextIntakePosition() {
-        double currentPosition = carousel.getPosition();
-
-        // if (gamepad2.b) {
-        //     carousel.setPosition(slotA.intakePosition);
-        // } else if (gamepad2.x) {
-        //     carousel.setPosition(slotB.intakePosition);
-        // }
-
-    }
-
-    public void previousIntakePosition() { }
-
-    public void showCarouselData() {
-        telemetry.addData("carousel position", "%.3f", carousel.getPosition());
-    }
-
-    double currentCarouselPosition = 0.5;
-    public void moveCarouselClockwise() {
-        currentCarouselPosition += 0.001;
-        currentCarouselPosition = Math.min(currentCarouselPosition, 1.0);
-
-        carousel.setPosition(currentCarouselPosition);
-        telemetry.addData("Current Carousel Position", currentCarouselPosition);
-    }
-
-    public void moveCarouselCounterClockwise() {
-        currentCarouselPosition -= 0.001;
-        currentCarouselPosition = Math.max(currentCarouselPosition, 0.0);
-        carousel.setPosition(currentCarouselPosition);
-        telemetry.addData("Current Carousel Position", currentCarouselPosition);
+    public void moveCarouselCounterClockwiseSlowly() {
+        testCarouselPosition -= 0.001;
+        testCarouselPosition = Math.max(testCarouselPosition, 0.0);
+        carousel.setPosition(testCarouselPosition);
+        telemetry.addData("Current Carousel Position", testCarouselPosition);
     }
 
 }
