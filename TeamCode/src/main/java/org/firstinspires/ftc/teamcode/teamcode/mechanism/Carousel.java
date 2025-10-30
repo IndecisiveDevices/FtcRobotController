@@ -77,6 +77,7 @@ public class Carousel {
             nextSlot = slotA;
         }
 
+        carousel.setPosition(nextSlot.intakePosition);
         telemetry.addData("Intake Set to Slot: ", nextSlot.name);
     }
 
@@ -87,7 +88,21 @@ public class Carousel {
      */
     public void nextLeftIntakePosition() {
 
+        double currentPosition = carousel.getPosition();
+        Slot nextSlot = null;
+
+        if (currentPosition > slotB.intakePosition) {
+            nextSlot = slotB;
+        } else if (currentPosition > slotA.intakePosition) {
+            nextSlot = slotA;
+        } else if (currentPosition > slotC.intakePosition) {
+            nextSlot = slotC;
+        }
+
+        carousel.setPosition(nextSlot.intakePosition);
+        telemetry.addData( "Intake Set to Slot: ",  nextSlot.name);
     }
+
 
     /**
      * Rotates carousel counter-clockwise to the next Slot intake position.
@@ -95,15 +110,44 @@ public class Carousel {
      *  Slot B <--  Slot A <-- Slot C
      */
     public void nextRightShootingPosition() {
+        double currentPosition = carousel.getPosition();
+        Slot nextSlot = null;
+
+        if (currentPosition < slotB.shootingPosition) {
+            nextSlot = slotB;
+        } else if (currentPosition < slotA.shootingPosition) {
+            nextSlot = slotA;
+        } else { // Slot A is the right-most we can go to.
+            nextSlot = slotC;
+        }
+
+        carousel.setPosition(nextSlot.shootingPosition);
+        telemetry.addData("Shooting Set to Slot: ", nextSlot.name);
 
     }
 
     public void nextLeftShootingPosition() {
+        double currentPosition = carousel.getPosition();
+        Slot nextSlot = null;
 
+        if (currentPosition > slotC.shootingPosition) {
+            nextSlot = slotC;
+        } else if (currentPosition > slotA.shootingPosition) {
+            nextSlot = slotA;
+        } else { // (currentPosition > slotB.shootingPosition)
+            nextSlot = slotB;
+        }
+
+        carousel.setPosition(nextSlot.shootingPosition);
+        telemetry.addData("Shooting Set to Slot: ", nextSlot.name);
     }
 
     public void setShootingPower(double shootingPower) {
+        shooterMotor.setPower(shootingPower);
+    }
 
+    public void kick() {
+        kicker.setPosition(1.00);
     }
 
     public void showCarouselData() {

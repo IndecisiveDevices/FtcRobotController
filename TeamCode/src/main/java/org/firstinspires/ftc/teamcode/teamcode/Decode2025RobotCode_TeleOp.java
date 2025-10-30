@@ -41,50 +41,56 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         // Intake Controls (IN PROGRESS)
         // uses:
         //   - carousel
-        //      .nextRightIntakePosition()
-        //      .nextLeftIntakePosition()
         //      .toggleIntakeOnOff()
         //   - gamepad2
         //      .x: counter-clockwise to next slot
         //      .b: clockwise to next slot
         //      .y: intake motor on/off
         //----------------------------
-        if (gamepad2.a){
+        if (gamepad2.a) {
             carousel.nextRightIntakePosition();
-        } else if (gamepad2.x){
-            carousel.nextLeftIntakePosition(); // TODO
+        } else if (gamepad2.x) {
+            carousel.nextLeftIntakePosition();
         }
 
         //----------------------------
-        // Shooting Controls (TODO)
-        // uses:
-        //   - carousel
-        //      .nextRightShootingPosition()
-        //      .nextLeftShootingPosition()
-        //      .setShootingPower(double type)
-        //      .shoot()
+        // Shooting Controls (DONE)
         //   - gamepad2
         //      .left_bumper: counter-clockwise (left) to next slot
         //      .right_bumper: clockwise (right) to next slot
-        //      .left_trigger: set shooter power
-        //      .right_trigger: shoot ball
+        //      .left_trigger: set shooter wheel power
+        //      .right_trigger: kick ball (shoot ball) - shooter wheel must be going
         //----------------------------
+        else if (gamepad2.left_bumper) {
+            carousel.nextLeftShootingPosition();
+        } else if (gamepad2.right_bumper) {
+            carousel.nextRightShootingPosition();
+        } else if (gamepad2.left_trigger > 0) {
+            carousel.setShootingPower(gamepad2.left_trigger);
 
+            if (gamepad2.right_trigger > 0) {
+                carousel.kick();
+            }
+        }
 
         //----------------------------
         // Lift Controls (TODO)
-        // uses:
-        //   - lifter (Lift)
-        //   - gamepad2 (dpad up/down)
-        // behavior:
-        //   - stop drive
-        //   - dpad up lifts motor until sensor is pressed
-        //   - dpad down lowers motor until motors are at "0" position
+        //   - gamepad2
+        //      .dpad_up: lifter lifts up
+        //      .dpad_down: lifter lowers down
         //----------------------------
+        if (gamepad2.dpad_up) {
+            driver.drive(0,0,0);
+            lifter.liftUp();
+        } else if (gamepad2.dpad_down) {
+            driver.drive(0,0,0);
+            lifter.liftDown();
+        }
 
         //----------------------------
         // Telemetry Update (DONE)
         //----------------------------
+        carousel.showCarouselData();
         telemetry.update();
     }
 }
