@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 public class Lift {
     // Lift Motors
     private DcMotor liftMotor0, liftMotor1;
+
+    // Sensors
     private TouchSensor touchSensor0;
 
 
@@ -36,7 +38,17 @@ public class Lift {
     //  - touchSensor0
     //      .isPressed()
     public void liftUp() {
-        if (touchSensor0.isPressed()) { return; }
+        // if the touchSensor is pressed, we are at the top
+        // and need to stop the motors so they don't cause damage.
+        if (touchSensor0.isPressed()) {
+            liftMotor0.setPower(0);
+            liftMotor1.setPower(0);
+            return;
+        }
+
+        // Need to make sure we are not still in RUN_TO_POSITION mode.
+        liftMotor0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         liftMotor0.setPower(0.1);
         liftMotor1.setPower(0.1);
@@ -50,8 +62,10 @@ public class Lift {
     public void liftDown() {
         liftMotor0.setTargetPosition(0);
         liftMotor1.setTargetPosition(0);
+
         liftMotor0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
         liftMotor0.setPower(0.1);
         liftMotor1.setPower(0.1);
     }

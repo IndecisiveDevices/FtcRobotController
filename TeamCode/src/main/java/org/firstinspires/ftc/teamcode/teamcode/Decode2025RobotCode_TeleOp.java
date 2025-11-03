@@ -74,7 +74,7 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         }
 
         //----------------------------
-        // Lift Controls (TODO)
+        // Lift Controls (DONE)
         //   - gamepad2
         //      .dpad_up: lifter lifts up
         //      .dpad_down: lifter lowers down

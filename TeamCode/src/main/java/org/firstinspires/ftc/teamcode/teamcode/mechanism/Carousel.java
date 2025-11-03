@@ -7,9 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
-
 public class Carousel {
     // Servos (carousel, kicker)
     private Servo carousel, kicker;
@@ -49,7 +46,7 @@ public class Carousel {
      * Turns on/off the intake motor.
      */
     boolean intakeMotorIsOn = false; // starts as off
-    public void turnOnIntakeMotorOnOff() {
+    public void turnIntakeMotorOnOff() {
 
     }
 
@@ -57,6 +54,10 @@ public class Carousel {
      * Rotates carousel clockwise to the next Slot intake position.
      * The order from lower (0.016) to higher (0.968)
      *  Slot C  --> Slot B --> Slot A
+     * Intake positions are
+     * - 0.016 (C): if current servo position is less than this, move to this position C
+     * - 0.482 (B): if it is less than this, move to this position B
+     * - 0.968 (A): if it is less than this, move to this position A
      */
     public void nextRightIntakePosition() {
         double currentPosition = carousel.getPosition();
@@ -65,10 +66,7 @@ public class Carousel {
         // We want to move clockwise (right) to the next position
         // so that means we need to order our if/else condition to
         // evaluate the smallest intake positions first.
-        // Intake positions are
-        // - 0.016 (C): if current servo position is less than this, move to this position C
-        // - 0.482 (B): if it is less than this, move to this position B
-        // - 0.968 (A): if it is less than this, move to this position A
+
         if (currentPosition < slotC.intakePosition) {
             nextSlot = slotC;
         } else if (currentPosition < slotB.intakePosition) {
