@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -18,8 +19,8 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     @Override
     public void init() {
         driver.initialize(hardwareMap);
-        lifter.initialize(hardwareMap);
-        carousel.initialize(hardwareMap);
+        lifter.initialize(hardwareMap, telemetry);
+        carousel.initialize(hardwareMap, telemetry);
     }
 
 
@@ -27,9 +28,6 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     public void loop() {
         //----------------------------
         // Drive Controls (Done)
-        // uses:
-        //   - driver.drive()
-        //   - gamepad1 (left stick x/y, right stick x)
         //----------------------------
         double forward = -gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
@@ -37,59 +35,78 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
 
         driver.drive(forward, strafe, rotate);
 
+        //-------------------
+        // Carousel Controls
+        //-------------------
+        // Left trigger start Shooting Mode.
+        // IF gamepad2 left trigger is pressed
+        //  - start the shooter  wheels motor
+        //  - buttons X, B, A will go to shooter positions
+        //  - right trigger will set ball kicker to 1.0 (it "shoots").
+        // ELSE
+        //  - buttons X, B, A will go to intake positions
+        //  - kicker will be set to 0.0
         //----------------------------
-        // Intake Controls (IN PROGRESS)
-        // uses:
-        //   - carousel
-        //      .toggleIntakeOnOff()
-        //   - gamepad2
-        //      .x: counter-clockwise to next slot
-        //      .b: clockwise to next slot
-        //      .y: intake motor on/off
-        //----------------------------
-        if (gamepad2.a) {
-            carousel.nextRightIntakePosition();
-        } else if (gamepad2.x) {
-            carousel.nextLeftIntakePosition();
+        carousel.setShootingPower(gamepad2.left_trigger);
+
+        if (gamepad2.left_trigger > 0) {
+            if (gamepad2.b) {
+                carousel.gotoShootingB();
+            } else if (gamepad2.x) {
+                carousel.gotoShootingX();
+            } else if (gamepad2.a) {
+                carousel.gotoShootingA();
+            } else {
+                if (gamepad2.right_trigger > 0) {
+                    carousel.kick(1.0);
+                } else {
+                    carousel.kick(0.0);
+                }
+            }
         }
+        else {
+            carousel.kick(0.0);
 
-        //----------------------------
-        // Shooting Controls (DONE)
-        //   - gamepad2
-        //      .left_bumper: counter-clockwise (left) to next slot
-        //      .right_bumper: clockwise (right) to next slot
-        //      .left_trigger: set shooter wheel power
-        //      .right_trigger: kick ball (shoot ball) - shooter wheel must be going
-        //----------------------------
-        else if (gamepad2.left_bumper) {
-            carousel.nextLeftShootingPosition();
-        } else if (gamepad2.right_bumper) {
-            carousel.nextRightShootingPosition();
-        } else if (gamepad2.left_trigger > 0) {
-            carousel.setShootingPower(gamepad2.left_trigger);
-
-            if (gamepad2.right_trigger > 0) {
-                carousel.kick();
+            if (gamepad2.b) {
+                carousel.gotoIntakeB();
+            } else if (gamepad2.x) {
+                carousel.gotoIntakeX();
+            } else if (gamepad2.a) {
+                carousel.gotoIntakeA();
             }
         }
 
-        //----------------------------
-        // Lift Controls (DONE)
-        //   - gamepad2
-        //      .dpad_up: lifter lifts up
-        //      .dpad_down: lifter lowers down
-        //----------------------------
-        if (gamepad2.dpad_up) {
-            driver.drive(0,0,0);
-            lifter.liftUp();
-        } else if (gamepad2.dpad_down) {
-            driver.drive(0,0,0);
-            lifter.liftDown();
+        if (gamepad2.y) {
+            carousel.turnIntakeMotorOnOff();
+        }
+
+//        //----------------------------
+//        // Lift Controls (DONE)
+//        //   - gamepad2
+//        //      .dpad_up: lifter lifts up
+//        //      .dpad_down: lifter lowers down
+//        //----------------------------
+//        if (gamepad2.dpad_up) {
+//            driver.drive(0,0,0);
+//            lifter.liftUp();
+//        } else if (gamepad2.dpad_down) {
+//            driver.drive(0,0,0);
+//            lifter.liftDown();
+//        }
+
+        // Coach Ed's code block for troubleshooting
+        if (gamepad1.a) {
+            lifter.liftLeft(-gamepad1.left_trigger);
+            lifter.liftRight(-gamepad1.right_trigger);
+        } else {
+            lifter.liftLeft(gamepad1.left_trigger);
+            lifter.liftRight(gamepad1.right_trigger);
         }
 
         //----------------------------
         // Telemetry Update (DONE)
         //----------------------------
+        lifter.displayLiftPositions();
         carousel.showCarouselData();
         telemetry.update();
     }

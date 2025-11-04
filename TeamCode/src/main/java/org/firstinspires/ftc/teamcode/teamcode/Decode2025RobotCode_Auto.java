@@ -22,8 +22,8 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
 
     public void initialize() {
         driver.initialize(hardwareMap);
-        lifter.initialize(hardwareMap);
-        carousel.initialize(hardwareMap);
+        lifter.initialize(hardwareMap, telemetry);
+        carousel.initialize(hardwareMap, telemetry);
     }
 
     @Override

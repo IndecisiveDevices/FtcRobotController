@@ -4,25 +4,29 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public class Lift {
     // Lift Motors
     private DcMotor liftMotor0, liftMotor1;
 
     // Sensors
     private TouchSensor touchSensor0;
+    private Telemetry telemetry;
 
 
-    public void initialize(HardwareMap hardwareMap) {
-        liftMotor0 = hardwareMap.get(DcMotor.class, "liftMotor0");
-        liftMotor1 = hardwareMap.get(DcMotor.class, "liftMotor1");
+    public void initialize(HardwareMap hardwareMap, Telemetry telemetry) {
+        this.telemetry = telemetry;
 
         touchSensor0 = hardwareMap.get(TouchSensor.class, "touchSensor0");
 
+        liftMotor0 = hardwareMap.get(DcMotor.class, "liftMotor0");
+        liftMotor1 = hardwareMap.get(DcMotor.class, "liftMotor1");
+
+        liftMotor0.setDirection(DcMotor.Direction.REVERSE);
+
         liftMotor0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        liftMotor0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         // lift is expected to be off (down) when initialized
         // We only have 1 touch sensor to use to tell us when the robot is at the top.
@@ -50,8 +54,8 @@ public class Lift {
         liftMotor0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        liftMotor0.setPower(0.1);
-        liftMotor1.setPower(0.1);
+        liftMotor0.setPower(0.5);
+        liftMotor1.setPower(0.5);
     }
 
     // Have motor move down until liftMotor0 or liftMotor1 is at start position.
@@ -66,7 +70,21 @@ public class Lift {
         liftMotor0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        liftMotor0.setPower(0.1);
-        liftMotor1.setPower(0.1);
+        liftMotor0.setPower(0.5);
+        liftMotor1.setPower(0.5);
+    }
+
+    public void liftRight(double power) {
+        liftMotor0.setPower(power);
+    }
+
+    public void liftLeft(double power) {
+        liftMotor1.setPower(power);
+    }
+
+    public void displayLiftPositions() {
+        telemetry.addData("Left Lift Position", liftMotor0.getCurrentPosition());
+        telemetry.addData("Right Lift Position", liftMotor1.getCurrentPosition());
+
     }
 }
