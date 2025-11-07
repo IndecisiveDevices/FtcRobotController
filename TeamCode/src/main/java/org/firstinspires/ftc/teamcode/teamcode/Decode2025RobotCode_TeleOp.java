@@ -90,15 +90,6 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
             driver.drive(0,0,0);
             lifter.liftDown();
         }
-//
-//        // Coach's code block for troubleshooting
-//        if (gamepad1.a) {
-//            lifter.liftLeft(-gamepad1.left_trigger);
-//            lifter.liftRight(-gamepad1.right_trigger);
-//        } else {
-//            lifter.liftLeft(gamepad1.left_trigger);
-//            lifter.liftRight(gamepad1.right_trigger);
-//        }
 
         //----------------------------
         // Telemetry Update (DONE)

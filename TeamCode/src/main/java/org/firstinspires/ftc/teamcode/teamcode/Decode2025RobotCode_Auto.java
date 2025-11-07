@@ -18,8 +18,6 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
 
-
-
     public void initialize() {
         driver.initialize(hardwareMap);
         lifter.initialize(hardwareMap, telemetry);

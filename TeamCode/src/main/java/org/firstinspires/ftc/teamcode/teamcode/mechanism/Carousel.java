@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode.mechanism;
 
+import static android.os.SystemClock.sleep;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -92,10 +94,13 @@ public class Carousel {
      */
     boolean intakeMotorIsOn = false; // starts as off
     public void turnIntakeMotorOnOff() {
-        intakeMotorIsOn = !intakeMotorIsOn;
-        intakeMotor.setPower(intakeMotorIsOn ? 1 : 0);
+        if (intakeMotorIsOn == true) {
+            intakeMotorIsOn = false;
+        } else {
+            intakeMotorIsOn = true;
+        }
 
-        // TODO: Replace with code
+        intakeMotor.setPower(intakeMotorIsOn ? 1 : 0);
     }
 
     public void setShootingPower(double shootingPower) {
@@ -178,20 +183,28 @@ public class Carousel {
         // 0.001 is a good starting point since servo positions are usually between 0.0 and 1.0.
         private static final double tolerance = 0.001;
 
-        public boolean isReadyForShot() {
+        public boolean isReadyForShot(double currPosition) {
             // Check if the absolute difference between the two positions is within our tolerance.
-            if (Math.abs(carousel.getPosition() - this.shootingPosition) < tolerance) {
+            if (Math.abs(currPosition - this.intakePosition) < tolerance) {
+                return true;
+            }
+            return false;
+        }
+
+        public boolean isReadyForShot() {
+            return isReadyForShot(carousel.getPosition());
+        }
+
+        public boolean isReadyForIntake(double currPosition) {
+            // Check if the absolute difference between the two positions is within our tolerance.
+            if (Math.abs(currPosition - this.intakePosition) < tolerance) {
                 return true;
             }
             return false;
         }
 
         public boolean isReadyForIntake() {
-            // Check if the absolute difference between the two positions is within our tolerance.
-            if (Math.abs(carousel.getPosition() - this.intakePosition) < tolerance) {
-                return true;
-            }
-            return false;
+            return isReadyForIntake(carousel.getPosition());
         }
     }
 
@@ -202,8 +215,10 @@ public class Carousel {
     }
 
     private void saveSlotColor() {
+        double currPosition = carousel.getPosition();
+
         for (Slot slot : allSlots) {
-            if (slot.isReadyForIntake()) {
+            if (slot.isReadyForIntake(currPosition)) {
                 slot.color = getClassificationColor();
             }
         }
