@@ -80,28 +80,25 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
             carousel.turnIntakeMotorOnOff();
         }
 
-//        //----------------------------
-//        // Lift Controls (DONE)
-//        //   - gamepad2
-//        //      .dpad_up: lifter lifts up
-//        //      .dpad_down: lifter lowers down
-//        //----------------------------
-//        if (gamepad2.dpad_up) {
-//            driver.drive(0,0,0);
-//            lifter.liftUp();
-//        } else if (gamepad2.dpad_down) {
-//            driver.drive(0,0,0);
-//            lifter.liftDown();
-//        }
-
-        // Coach Ed's code block for troubleshooting
-        if (gamepad1.a) {
-            lifter.liftLeft(-gamepad1.left_trigger);
-            lifter.liftRight(-gamepad1.right_trigger);
-        } else {
-            lifter.liftLeft(gamepad1.left_trigger);
-            lifter.liftRight(gamepad1.right_trigger);
+        //----------------------------
+        // Lift Controls (DONE)
+        //----------------------------
+        if (gamepad2.dpad_up) {
+            driver.drive(0,0,0);
+            lifter.liftUp();
+        } else if (gamepad2.dpad_down) {
+            driver.drive(0,0,0);
+            lifter.liftDown();
         }
+//
+//        // Coach's code block for troubleshooting
+//        if (gamepad1.a) {
+//            lifter.liftLeft(-gamepad1.left_trigger);
+//            lifter.liftRight(-gamepad1.right_trigger);
+//        } else {
+//            lifter.liftLeft(gamepad1.left_trigger);
+//            lifter.liftRight(gamepad1.right_trigger);
+//        }
 
         //----------------------------
         // Telemetry Update (DONE)

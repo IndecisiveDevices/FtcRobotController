@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode.mechanism;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -52,7 +53,10 @@ public class Carousel {
         colorSensor1.setGain(7);
 
         shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
+        shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
         intakeMotor.setTargetPosition(1);
     }
 
@@ -78,6 +82,7 @@ public class Carousel {
     public void gotoShootingB() {
         carousel.setPosition(slotB.shootingPosition);
     }
+
     public void gotoShootingX() {
         carousel.setPosition(slotX.shootingPosition);
     }
@@ -87,6 +92,9 @@ public class Carousel {
      */
     boolean intakeMotorIsOn = false; // starts as off
     public void turnIntakeMotorOnOff() {
+        intakeMotorIsOn = !intakeMotorIsOn;
+        intakeMotor.setPower(intakeMotorIsOn ? 1 : 0);
+
         // TODO: Replace with code
     }
 
@@ -128,42 +136,27 @@ public class Carousel {
     /*****************************************************************************************
      * NEW CONCEPT: Enums (sounds like "ee-num")
      *
-     * Imagine you're creating a character for a video game and you need to choose their
-     * special power: Flying, Super-Speed, or Invisibility. You want to make sure you can
-     * ONLY pick from that specific list.
-     *
-     * That's exactly what an Enum does! It lets us create our own custom "type" with a
-     * fixed list of possible values. Here, we've created a type called
-     * `ClassificationColor` that can ONLY be `Purple`, `Green`, or `None`.
-     *
-     * Why is this cool?
-     * 1. It prevents typos! You can't accidentally type "Purpul".
-     * 2. It makes the code super easy to read. `if (pixelColor == ClassificationColor.Green)`
-     *    is much clearer than `if (pixelColor == 2)`.
-     *
-     * Think of it as creating a multiple-choice question for our code!
+     * Imagine you're creating a character for a video game and need to pick a special
+     * power from a specific list, like Flying, Super-Speed, or Invisibility. An Enum
+     * does exactly that! It lets us create our own custom "type" with a fixed list of
+     * choices. We've created `ClassificationColor` which can ONLY be `Purple`, `Green`,
+     * or `None`. This is awesome because it prevents typos and makes the code super
+     * easy to read, turning our code's choices into a simple multiple-choice question!
      ****************************************************************************************/
     public enum ClassificationColor { Purple, Green, None}
 
     /*****************************************************************************************
      * NEW CONCEPT: Inner Classes (like a mini-class!)
      *
-     * Imagine you're building a LEGO car. You need wheels, right? Each wheel is made of
-     * a tire and a rim. Instead of having a messy pile of tires and rims, it's way
-     * more organized to build each wheel first and then attach them to the car.
+     * Imagine you're building a LEGO car. Instead of having a messy pile of tires and
+     * rims, it's more organized to build each wheel first, then attach it to the car.
      *
-     * An inner class is like that! We're building a "Carousel," and it has three "Slots"
-     * (A, B, and C). Each slot has its own data: a name and an intake position, for example.
+     * This `Slot` class is our blueprint for an organized "wheel." We are building a
+     * "Carousel" that has three "Slots," and each slot has its own data bundled
+     * together neatly: a name, an intake position, and a shooting position.
      *
-     * This `Slot` class is our blueprint for making a perfect, organized "wheel."
-     * We can create an "instance" (a real object) of this class for each of our carousel
-     * slots. This keeps all the information for one slot bundled together neatly.
-     *
-     * It makes our main code much cleaner and easier to read. Instead of a jumble of
-     * variables, we get to use organized objects like `slotA.intakePosition`!
-     *
-     * Better yet, we can add more fields to the class as we need. Are intake position and
-     * name enough information about a Slot for our robot?
+     * This makes our main code much cleaner. Instead of a jumble of variables, we
+     * get to use organized objects like `slotA.intakePosition`!
      ****************************************************************************************/
     public class Slot {
         public final double intakePosition;
