@@ -35,7 +35,7 @@ public class Lift {
 
     // Have motors move with positive power until
     // touch sensor is pressed.
-    public void liftUp() {
+    public void liftUp(double power) {
         // if the touchSensor is pressed, we are at the top
         // and need to stop the motors so they don't cause damage.
         if (touchSensor0.isPressed()) {
@@ -48,20 +48,20 @@ public class Lift {
         liftMotor0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        liftMotor0.setPower(0.5);
-        liftMotor1.setPower(0.5);
+        liftMotor0.setPower(power);
+        liftMotor1.setPower(power);
     }
 
     // Left motors
-    public void liftDown() {
+    public void liftDown(double power) {
         liftMotor0.setTargetPosition(0);
         liftMotor1.setTargetPosition(0);
 
         liftMotor0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        liftMotor0.setPower(0.5);
-        liftMotor1.setPower(0.5);
+        liftMotor0.setPower(power);
+        liftMotor1.setPower(power);
     }
 
     // ----------------------------------------------

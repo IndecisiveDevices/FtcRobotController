@@ -16,13 +16,19 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
 
+    // GAME MATCH QUICK SETTINGS
+    double SHOOTING_POWER_CROSS_FIELD = 0.65;
+    double SHOOTING_POWER_CLOSE_RANGE = 0.25;
+
+    // DEFAULT SETTINGS
+    double currentShooterSpeed = SHOOTING_POWER_CROSS_FIELD;
+
     @Override
     public void init() {
         driver.initialize(hardwareMap);
         lifter.initialize(hardwareMap, telemetry);
         carousel.initialize(hardwareMap, telemetry);
     }
-
 
     @Override
     public void loop() {
@@ -38,16 +44,28 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         //-------------------
         // Carousel Controls
         //-------------------
-        // Left trigger start Shooting Mode.
+        // gamepad2.back: turns shooter on/off
+        // gamepad2.dpad_up/down: sets shooter speed
+        //----------------------------
+        // gamepad2.left_trigger: Shooting Mode.
         // IF gamepad2 left trigger is pressed
-        //  - start the shooter  wheels motor
         //  - buttons X, B, A will go to shooter positions
-        //  - right trigger will set ball kicker to 1.0 (it "shoots").
+        //  - right trigger will set ball kicker to up
         // ELSE
         //  - buttons X, B, A will go to intake positions
-        //  - kicker will be set to 0.0
+        //  - kicker will be set to down
         //----------------------------
-        carousel.setShootingPower(gamepad2.left_trigger);
+        if (gamepad2.backWasPressed()) {
+            carousel.turnShooterOnOff(currentShooterSpeed);
+        }
+
+        if (gamepad2.dpadUpWasPressed()) {
+            currentShooterSpeed = SHOOTING_POWER_CROSS_FIELD;
+            carousel.setShootingPower(currentShooterSpeed);
+        } else if (gamepad2.dpadDownWasPressed()) {
+            currentShooterSpeed = SHOOTING_POWER_CLOSE_RANGE;
+            carousel.setShootingPower(currentShooterSpeed);
+        }
 
         if (gamepad2.left_trigger > 0) {
             if (gamepad2.b) {
@@ -82,20 +100,33 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
 
         //----------------------------
         // Lift Controls (DONE)
+        // Lift control only engaged when robot it not moving
+        // - gamepad1.right_trigger + a: lower lift
+        // - gamepad1.right_trigger: raise lift
         //----------------------------
-        if (gamepad2.dpad_up) {
-            driver.drive(0,0,0);
-            lifter.liftUp();
-        } else if (gamepad2.dpad_down) {
-            driver.drive(0,0,0);
-            lifter.liftDown();
-        }
+        boolean robotIsStopped = isRobotStopped(forward, strafe, rotate);
 
+        if (robotIsStopped) {
+            if (gamepad1.right_trigger > 0) {
+                if (gamepad1.a) {
+                    lifter.liftDown(gamepad1.right_trigger / 2);
+                } else {
+                    lifter.liftUp(gamepad1.right_trigger / 2);
+                }
+            }
+        }
         //----------------------------
         // Telemetry Update (DONE)
         //----------------------------
         lifter.displayLiftPositions();
         carousel.showCarouselData();
         telemetry.update();
+    }
+
+    // ---------------------------------------------------------------------
+    // returns true if forward, strafe, and rotate are all at 0 (not moving)
+    // ---------------------------------------------------------------------
+    private boolean isRobotStopped(double forward, double strafe, double rotate) {
+        return (forward == 0 && strafe == 0 && rotate == 0);
     }
 }

@@ -92,9 +92,9 @@ public class Carousel {
     /**
      * Turns on/off the intake motor.
      */
-    boolean intakeMotorIsOn = false; // starts as off
+    private boolean intakeMotorIsOn = false; // starts as off
     public void turnIntakeMotorOnOff() {
-        if (intakeMotorIsOn == true) {
+        if (intakeMotorIsOn) {
             intakeMotorIsOn = false;
         } else {
             intakeMotorIsOn = true;
@@ -103,8 +103,25 @@ public class Carousel {
         intakeMotor.setPower(intakeMotorIsOn ? 1 : 0);
     }
 
+    /*********************************
+     * Turns on/off the shooter motor.
+     * - create a class field outside of the method to save our decision of on/off (starts as off)
+     * - then create a method that updates the decision, then set's the motor on/of based on that
+     ********************************/
+    private boolean shooterMotorIsOn = false;  // this saves our decision. Starts as off (false)
+
+    public void turnShooterOnOff(double power) {
+        if (shooterMotorIsOn) {
+            shooterMotorIsOn = false;
+        } else {
+            shooterMotorIsOn = true;
+        }
+        setShootingPower(power);
+    }
+
+    // will set the shooting power above 0 if shooterMotorIsOn is true
     public void setShootingPower(double shootingPower) {
-        shooterMotor.setPower(shootingPower);
+        shooterMotor.setPower(shooterMotorIsOn ? shootingPower : 0);
     }
 
     public void kick(double power) {
