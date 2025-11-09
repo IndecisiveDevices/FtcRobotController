@@ -17,13 +17,13 @@ public class Carousel {
     private Telemetry telemetry;
 
     // Servos (carousel, kicker)
-    private Servo carousel, kicker;
+    public Servo carousel, kicker;
 
     // Color & Touch Sensors
-    private NormalizedColorSensor colorSensor0, colorSensor1;
+    public NormalizedColorSensor colorSensor0, colorSensor1;
 
     // Shooter & Intake Motors
-    private DcMotor shooterMotor, intakeMotor;
+    public DcMotor shooterMotor, intakeMotor;
 
     // create Intake and Shooting positions for the carousel A, B, and C positions (2 each)
     private final double A_INTAKE_POSITION = 0.968;
@@ -44,8 +44,8 @@ public class Carousel {
     public void initialize(HardwareMap hardwareMap, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        carousel = hardwareMap.get(Servo.class, "carousel");
-        kicker = hardwareMap.get(Servo.class, "kicker");
+        carousel = hardwareMap.get(Servo.class, "carousel"); // expansion port: 0
+        kicker = hardwareMap.get(Servo.class, "kicker"); // expansion port: 2
         kicker.setDirection(Servo.Direction.REVERSE);
 
         colorSensor0 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor0");
@@ -54,12 +54,11 @@ public class Carousel {
         colorSensor1 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor1");
         colorSensor1.setGain(7);
 
-        shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor");
+        shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor"); // port 3.
         shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor");
+        intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor"); // port: 0
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intakeMotor.setTargetPosition(1);
     }
 
     public void gotoIntakeA() {
@@ -202,7 +201,7 @@ public class Carousel {
 
         public boolean isReadyForShot(double currPosition) {
             // Check if the absolute difference between the two positions is within our tolerance.
-            if (Math.abs(currPosition - this.intakePosition) < tolerance) {
+            if (Math.abs(currPosition - this.shootingPosition) < tolerance) {
                 return true;
             }
             return false;

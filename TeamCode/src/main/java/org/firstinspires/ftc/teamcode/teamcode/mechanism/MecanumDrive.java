@@ -10,7 +10,7 @@ public class MecanumDrive {
     private HardwareMap hardwareMap;
 
     // Drive Motors
-    private DcMotor frontLeftDrive, frontRightDrive, rearLeftDrive, rearRightDrive;
+    public DcMotor frontLeftDrive, frontRightDrive, rearLeftDrive, rearRightDrive;
 
     // can be used to determine robot orientation (gyro)
     private IMU imu;
@@ -22,10 +22,10 @@ public class MecanumDrive {
     }
 
     private void initDriveMotors() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeft_motor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "frontRight_motor");
-        rearLeftDrive = hardwareMap.get(DcMotor.class, "rearLeft_motor");
-        rearRightDrive = hardwareMap.get(DcMotor.class, "rearRight_motor");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeft_motor"); // expansion port: 0
+        frontRightDrive = hardwareMap.get(DcMotor.class, "frontRight_motor"); // expansion port: 2
+        rearLeftDrive = hardwareMap.get(DcMotor.class, "rearLeft_motor"); // expansion port: 1
+        rearRightDrive = hardwareMap.get(DcMotor.class, "rearRight_motor"); // expansion port: 3
 
         frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -65,4 +65,5 @@ public class MecanumDrive {
         this.rearLeftDrive.setPower(maxSpeed * (rearLeftPower/ maxPower));
         this.frontRightDrive.setPower(maxSpeed * (frontRightPower/ maxPower));
     }
+
 }

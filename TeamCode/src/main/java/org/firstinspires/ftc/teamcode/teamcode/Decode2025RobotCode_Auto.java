@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
-@TeleOp(name = "Decode2025RobotCode_Auto", group = "Robot")
+@Autonomous(name = "Decode2025RobotCode_Auto", group = "Robot")
 public class Decode2025RobotCode_Auto extends LinearOpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();

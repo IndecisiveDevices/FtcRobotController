@@ -6,15 +6,19 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.teamcode.mechanism.AprilTagsWebCam;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.Carousel;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "Decode2025RobotCode_TeleOp", group = "Robot")
 public class Decode2025RobotCode_TeleOp extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
+    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
+
 
     // GAME MATCH QUICK SETTINGS
     double SHOOTING_POWER_CROSS_FIELD = 0.65;
@@ -28,10 +32,19 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         driver.initialize(hardwareMap);
         lifter.initialize(hardwareMap, telemetry);
         carousel.initialize(hardwareMap, telemetry);
+        aprilTagsWebCam.initialize(hardwareMap, telemetry);
     }
 
     @Override
     public void loop() {
+        aprilTagsWebCam.update();
+        AprilTagDetection red = aprilTagsWebCam.getTagBySpecificId(24);
+        AprilTagDetection blue = aprilTagsWebCam.getTagBySpecificId(20);
+
+        aprilTagsWebCam.displayDetectionTelemetry(red);
+        aprilTagsWebCam.displayDetectionTelemetry(blue);
+
+
         //----------------------------
         // Drive Controls (Done)
         //----------------------------
@@ -107,14 +120,27 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         boolean robotIsStopped = isRobotStopped(forward, strafe, rotate);
 
         if (robotIsStopped) {
-            if (gamepad1.right_trigger > 0) {
+            // use for resetting between matches
+            if (gamepad1.b) {
+                lifter.liftRight(gamepad1.right_trigger);
+                lifter.liftLeft(gamepad1.left_trigger);
+            } else if (gamepad1.x) {
+                lifter.liftRight(-gamepad1.right_trigger);
+                lifter.liftLeft(-gamepad1.left_trigger);
+            }
+            // otherwise, do normal lift control
+            else if (gamepad1.right_trigger > 0) {
                 if (gamepad1.a) {
                     lifter.liftDown(gamepad1.right_trigger / 2);
                 } else {
                     lifter.liftUp(gamepad1.right_trigger / 2);
                 }
+            } else {
+                lifter.stopLift();
             }
+
         }
+
         //----------------------------
         // Telemetry Update (DONE)
         //----------------------------
