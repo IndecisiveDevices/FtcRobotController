@@ -1,87 +1,163 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+
+import org.firstinspires.ftc.teamcode.teamcode.mechanism.AprilTagsWebCam;
+import org.firstinspires.ftc.teamcode.teamcode.mechanism.Carousel;
+import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
+import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "Decode2025RobotCode_TeleOp", group = "Robot")
 public class Decode2025RobotCode_TeleOp extends OpMode {
-    // Drive Motors
-    private DcMotor frontLeftDrive, frontRightDrive, rearLeftDrive, rearRightDrive;
+    MecanumDrive driver = new MecanumDrive();
+    Lift lifter = new Lift();
+    Carousel carousel = new Carousel();
+    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
 
-    // can be used to determine robot orientation (gyro)
-    private IMU imu;
+    // April Tag IDs for Red and Blue goals/targets
+    final int RED_TAG_ID = 24;
+    final int BLUE_TAG_ID = 20;
+
+    // TODO: VERIFY THIS DISTANCE
+    final double MEASURED_CROSS_FIELD_SHOOTING_DISTANCE = 138.0;
+
+    // GAME MATCH QUICK SETTINGS
+    final int SHOOTING_TARGET_TAG_ID = RED_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
+    double SHOOTING_POWER_CROSS_FIELD = 0.67;
+    double SHOOTING_POWER_MIN = 0.25;
+
+    // DEFAULT SETTINGS
+    double currentShooterSpeed = SHOOTING_POWER_CROSS_FIELD;
 
     @Override
     public void init() {
-        initDriveMotors();
-        initImu();
-        initSensors();
-        initServos();
-    }
-
-    private void initServos() {
-
-    }
-
-    private void initSensors() {
-
-    }
-
-    private void initImu() {
-        imu = hardwareMap.get(IMU.class, "imu");
-
-        RevHubOrientationOnRobot RevOrientation = new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
-
-        imu.initialize(new IMU.Parameters(RevOrientation));
-    }
-
-    private void initDriveMotors() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeft_motor");
-        frontRightDrive = hardwareMap.get(DcMotor.class, "frontRight_motor");
-        rearLeftDrive = hardwareMap.get(DcMotor.class, "rearLeft_motor");
-        rearRightDrive = hardwareMap.get(DcMotor.class, "rearRight_motor");
-
-        frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-        rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rearLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rearRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    }
-
-    private void drive(double forward, double strafe, double rotate) {
-        double frontLeftPower = forward + strafe + rotate;
-        double rearLeftPower = forward - strafe + rotate;
-        double frontRightPower = forward - strafe - rotate;
-        double rearRightPower = forward + strafe - rotate;
-
-        double maxPower = 1.0;
-        double maxSpeed = 1.0; // this is a throttle that we can set lower for demos. Do no set higher than 1.0
-
-        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
-        maxPower = Math.max(maxPower, Math.abs(rearLeftPower));
-        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
-        maxPower = Math.max(maxPower, Math.abs(rearRightPower));
-
-        this.frontLeftDrive.setPower(maxSpeed * (frontLeftPower/ maxPower));
-        this.rearRightDrive.setPower(maxSpeed * (rearRightPower/ maxPower));
-        this.rearLeftDrive.setPower(maxSpeed * (rearLeftPower/ maxPower));
-        this.frontRightDrive.setPower(maxSpeed * (frontRightPower/ maxPower));
+        driver.initialize(hardwareMap);
+        lifter.initialize(hardwareMap, telemetry);
+        carousel.initialize(hardwareMap, telemetry);
+        aprilTagsWebCam.initialize(hardwareMap, telemetry);
     }
 
     @Override
     public void loop() {
+        aprilTagsWebCam.update();
+        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+        aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+
+        //----------------------------
+        // Drive Controls (Done)
+        //----------------------------
         double forward = -gamepad1.left_stick_y;
         double strafe = gamepad1.left_stick_x;
-        double rotate = gamepad1. right_stick_x;
+        double rotate = gamepad1.right_stick_x;
 
-        drive(forward, strafe, rotate);
+        driver.drive(forward, strafe, rotate);
+
+        //-------------------
+        // Carousel Controls
+        //-------------------
+        // gamepad2.back: turns shooter on/off
+        // gamepad2.dpad_up/down: sets shooter speed
+        //----------------------------
+        // gamepad2.left_trigger: Shooting Mode.
+        // IF gamepad2 left trigger is pressed
+        //  - buttons X, B, A will go to shooter positions
+        //  - right trigger will set ball kicker to up
+        // ELSE
+        //  - buttons X, B, A will go to intake positions
+        //  - kicker will be set to down
+        //----------------------------
+        if (gamepad2.backWasPressed()) {
+            carousel.turnShooterOnOff(currentShooterSpeed);
+        }
+
+        // Set shooter speed based on distance to target
+        double newShootingPower = calculateShooterPower(targetTag.ftcPose.range);
+        carousel.setShootingPower(newShootingPower);
+
+        if (gamepad2.left_trigger > 0) {
+            if (gamepad2.b) {
+                carousel.gotoShootingB();
+            } else if (gamepad2.x) {
+                carousel.gotoShootingX();
+            } else if (gamepad2.a) {
+                carousel.gotoShootingA();
+            } else {
+                if (gamepad2.right_trigger > 0) {
+                    carousel.kick(1.0);
+                } else {
+                    carousel.kick(0.0);
+                }
+            }
+        }
+        else {
+            carousel.kick(0.0);
+
+            if (gamepad2.b) {
+                carousel.gotoIntakeB();
+            } else if (gamepad2.x) {
+                carousel.gotoIntakeX();
+            } else if (gamepad2.a) {
+                carousel.gotoIntakeA();
+            }
+        }
+
+        if (gamepad2.y) {
+            carousel.turnIntakeMotorOnOff();
+        }
+
+        //----------------------------
+        // Lift Controls (DONE)
+        // Lift control only engaged when robot it not moving
+        // - gamepad1.right_trigger + a: lower lift
+        // - gamepad1.right_trigger: raise lift
+        //----------------------------
+        boolean robotIsStopped = isRobotStopped(forward, strafe, rotate);
+
+        if (robotIsStopped) {
+            // use for resetting between matches
+            if (gamepad1.b) {
+                lifter.liftRight(gamepad1.right_trigger);
+                lifter.liftLeft(gamepad1.left_trigger);
+            } else if (gamepad1.x) {
+                lifter.liftRight(-gamepad1.right_trigger);
+                lifter.liftLeft(-gamepad1.left_trigger);
+            }
+            // otherwise, do normal lift control
+            else if (gamepad1.right_trigger > 0) {
+                if (gamepad1.a) {
+                    lifter.liftDown(gamepad1.right_trigger / 2);
+                } else {
+                    lifter.liftUp(gamepad1.right_trigger / 2);
+                }
+            } else {
+                lifter.stopLift();
+            }
+
+        }
+
+        //----------------------------
+        // Telemetry Update (DONE)
+        //----------------------------
+        lifter.displayLiftPositions();
+        carousel.showCarouselData();
+        telemetry.update();
+    }
+
+    // TODO: complete calculation
+    public double calculateShooterPower(double inches) {
+        if (inches < 16) {
+            return SHOOTING_POWER_MIN;
+        }
+        return inches * (SHOOTING_POWER_CROSS_FIELD / MEASURED_CROSS_FIELD_SHOOTING_DISTANCE);
+    }
+
+    // ---------------------------------------------------------------------
+    // returns true if forward, strafe, and rotate are all at 0 (not moving)
+    // ---------------------------------------------------------------------
+    private boolean isRobotStopped(double forward, double strafe, double rotate) {
+        return (forward == 0 && strafe == 0 && rotate == 0);
     }
 }
