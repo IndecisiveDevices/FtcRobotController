@@ -123,8 +123,6 @@ public class AprilTagsWebCam {
             gainControl.setGain(gain);
             sleep(20);
         }
-
-
     }
 
     private void sleep(long ms) {

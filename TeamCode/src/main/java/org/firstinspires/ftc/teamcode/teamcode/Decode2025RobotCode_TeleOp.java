@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.AprilTagsWebCam;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.Carousel;
@@ -19,10 +16,17 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     Carousel carousel = new Carousel();
     AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
 
+    // April Tag IDs for Red and Blue goals/targets
+    final int RED_TAG_ID = 24;
+    final int BLUE_TAG_ID = 20;
+
+    // TODO: VERIFY THIS DISTANCE
+    final double MEASURED_CROSS_FIELD_SHOOTING_DISTANCE = 138.0;
 
     // GAME MATCH QUICK SETTINGS
-    double SHOOTING_POWER_CROSS_FIELD = 0.65;
-    double SHOOTING_POWER_CLOSE_RANGE = 0.25;
+    final int SHOOTING_TARGET_TAG_ID = RED_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
+    double SHOOTING_POWER_CROSS_FIELD = 0.67;
+    double SHOOTING_POWER_MIN = 0.25;
 
     // DEFAULT SETTINGS
     double currentShooterSpeed = SHOOTING_POWER_CROSS_FIELD;
@@ -38,12 +42,9 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     @Override
     public void loop() {
         aprilTagsWebCam.update();
-        AprilTagDetection red = aprilTagsWebCam.getTagBySpecificId(24);
-        AprilTagDetection blue = aprilTagsWebCam.getTagBySpecificId(20);
+        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
-        aprilTagsWebCam.displayDetectionTelemetry(red);
-        aprilTagsWebCam.displayDetectionTelemetry(blue);
-
+        aprilTagsWebCam.displayDetectionTelemetry(targetTag);
 
         //----------------------------
         // Drive Controls (Done)
@@ -72,13 +73,9 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
             carousel.turnShooterOnOff(currentShooterSpeed);
         }
 
-        if (gamepad2.dpadUpWasPressed()) {
-            currentShooterSpeed = SHOOTING_POWER_CROSS_FIELD;
-            carousel.setShootingPower(currentShooterSpeed);
-        } else if (gamepad2.dpadDownWasPressed()) {
-            currentShooterSpeed = SHOOTING_POWER_CLOSE_RANGE;
-            carousel.setShootingPower(currentShooterSpeed);
-        }
+        // Set shooter speed based on distance to target
+        double newShootingPower = calculateShooterPower(targetTag.ftcPose.range);
+        carousel.setShootingPower(newShootingPower);
 
         if (gamepad2.left_trigger > 0) {
             if (gamepad2.b) {
@@ -147,6 +144,14 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         lifter.displayLiftPositions();
         carousel.showCarouselData();
         telemetry.update();
+    }
+
+    // TODO: complete calculation
+    public double calculateShooterPower(double inches) {
+        if (inches < 16) {
+            return SHOOTING_POWER_MIN;
+        }
+        return inches * (SHOOTING_POWER_CROSS_FIELD / MEASURED_CROSS_FIELD_SHOOTING_DISTANCE);
     }
 
     // ---------------------------------------------------------------------
