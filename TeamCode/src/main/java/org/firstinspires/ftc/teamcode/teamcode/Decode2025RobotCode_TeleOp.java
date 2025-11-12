@@ -140,16 +140,8 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         boolean robotIsStopped = isRobotStopped(forward, strafe, rotate);
 
         if (robotIsStopped) {
-            // use for resetting between matches
-            if (gamepad1.b) {
-                lifter.liftRight(gamepad1.right_trigger);
-                lifter.liftLeft(gamepad1.left_trigger);
-            } else if (gamepad1.x) {
-                lifter.liftRight(-gamepad1.right_trigger);
-                lifter.liftLeft(-gamepad1.left_trigger);
-            }
             // otherwise, do normal lift control
-            else if (gamepad1.right_trigger > 0) {
+            if (gamepad1.right_trigger > 0) {
                 if (gamepad1.a) {
                     lifter.liftDown(gamepad1.right_trigger / 2);
                 } else {
