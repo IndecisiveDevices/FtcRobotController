@@ -11,8 +11,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.List;
 
-@TeleOp(name = "Test_Decode_With_Increment_power", group = "Robot")
-public class Test_Decode_With_Increment_power extends OpMode {
+@TeleOp(name = "TEST_With_Increment_power", group = "Robot")
+public class TEST_With_Increment_power extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
@@ -181,7 +181,7 @@ public class Test_Decode_With_Increment_power extends OpMode {
         if (inches < 16) {
             return SHOOTING_POWER_MIN;
         }
-        return inches * SHOOTING_POWER_PER_INCH;
+        return (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
     }
 
     // ---------------------------------------------------------------------

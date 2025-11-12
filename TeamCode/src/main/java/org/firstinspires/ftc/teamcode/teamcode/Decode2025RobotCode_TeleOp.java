@@ -164,7 +164,7 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         if (inches < 24) {
             return currentShooterSpeed;
         }
-        return inches * SHOOTING_POWER_PER_INCH;
+        return (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
     }
 
     // ---------------------------------------------------------------------

@@ -221,7 +221,7 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         if (inches < 24) {
             return currentShooterSpeed;
         }
-        return inches * SHOOTING_POWER_PER_INCH;
+        return (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
     }
 
     // Use april tag to auto move the bot to target until you reach distanceToTagInches.
