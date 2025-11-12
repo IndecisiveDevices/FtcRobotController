@@ -9,6 +9,8 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.List;
+
 @TeleOp(name = "Test_Decode_With_Increment_power", group = "Robot")
 public class Test_Decode_With_Increment_power extends OpMode {
     MecanumDrive driver = new MecanumDrive();
@@ -64,6 +66,12 @@ public class Test_Decode_With_Increment_power extends OpMode {
                 distanceToTarget = targetTag.ftcPose.range;
             }
             aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+        }
+
+        List<AprilTagDetection> currentDetections = aprilTagsWebCam.getDetectedTags();
+
+        for (AprilTagDetection detection : currentDetections) {
+            aprilTagsWebCam.displayDetectionTelemetry(detection);
         }
 
         telemetry.addData("Shooter Power", currentShooterSpeed);

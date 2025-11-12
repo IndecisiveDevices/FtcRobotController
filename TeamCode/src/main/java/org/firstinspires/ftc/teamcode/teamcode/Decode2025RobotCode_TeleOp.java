@@ -31,7 +31,6 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
 
     // GAME MATCH QUICK SETTINGS
     final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
-    double SHOOTING_POWER_MIN = 0.25;
 
     // DEFAULT SETTINGS
     double currentShooterSpeed = TESTED_SHOOTING_POWER_CROSS_FIELD;
@@ -161,7 +160,6 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         telemetry.update();
     }
 
-    // TODO: complete calculation
     public double calculateShooterPower(double inches) {
         if (inches < 24) {
             return currentShooterSpeed;

@@ -13,8 +13,8 @@ import java.util.List;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
-@Autonomous(name = "Decode2025_Auto_Blue_StartByGoal", group = "Robot")
-public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
+@Autonomous(name = "Decode2025_Auto_Blue_StartAtCrossField", group = "Robot")
+public class Decode2025_Auto_Blue_StartAtCrossField extends LinearOpMode {
     MecanumDrive driver = new MecanumDrive();
     Carousel carousel = new Carousel();
     AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
@@ -57,7 +57,7 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
     final double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
 
     // DEFAULT SETTINGS
-    double currentShooterSpeed = 0.3;  // adding value here is how to set the starting speed
+    double currentShooterSpeed = TESTED_SHOOTING_POWER_CROSS_FIELD;
 
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
@@ -76,17 +76,10 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         carousel.turnShooterOnOff(currentShooterSpeed);
 
         /// /////////////////////////////////////
-        // BACK AWAY FROM GOAL
-        /// ////////////////////////////////////
-        driver.drive(-1, -0.01, 0);
-        sleep(1286);
-        driver.drive(0, 0, 0);
-
-        /// /////////////////////////////////////
         // GET CLASSIFICATION TAG ID
         /// ////////////////////////////////////
-        // TODO: We need to face the Obelisk to get the classification order and set
-        // the classification tag ID so we know what order to shoot balls in.
+        // TODO: We need to face the Obelisk and set
+        // the classification tag ID so we know which order to shoot the balls
         classificationTagId = getClassificationTagId();
 
         /// /////////////////////////////////////
@@ -98,17 +91,9 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         /// /////////////////////////////////////
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
-        // slide left,
+        // slide right
         driver.drive(0.0, -0.5, -0);
-        sleep(1238);
-
-        // then rotate to face the loading zone
-        driver.drive(0, 0, -0.5);
-        sleep(1200);
-
-        // then drive to loading zone
-        driver.drive(1, 0, 0);
-        sleep(2200);
+        sleep(1500);
 
         // if we want to use april tags to move to or away from the robot
         // goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
