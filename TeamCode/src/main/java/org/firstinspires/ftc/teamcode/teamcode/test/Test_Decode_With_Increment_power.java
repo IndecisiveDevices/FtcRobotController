@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teamcode;
+package org.firstinspires.ftc.teamcode.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -9,8 +9,8 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp(name = "Decode2025RobotCode_TeleOp", group = "Robot")
-public class Decode2025RobotCode_TeleOp extends OpMode {
+@TeleOp(name = "Test_Decode_With_Increment_power", group = "Robot")
+public class Test_Decode_With_Increment_power extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
@@ -25,16 +25,15 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     final double CAMERA_TO_WHEEL_INCHES = 10.0; // inches between camera face and back of shooter wheel
     final double TESTED_CAMERA_TO_TARGET_INCHES = 119.1; // inches between camera face and target
     final double TESTED_SHOOTING_DISTANCE_FROM_WHEEL = (CAMERA_TO_WHEEL_INCHES + TESTED_CAMERA_TO_TARGET_INCHES);
-
-    final double TESTED_SHOOTING_POWER_CROSS_FIELD = 0.69; // <<----- Tested
-    final double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
+    final double SHOOTING_POWER_CROSS_FIELD = 0.68; // <<----- CHANGE THIS POTENTIALLY
+    final double SHOOTING_POWER_PER_INCH = (SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
 
     // GAME MATCH QUICK SETTINGS
     final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
     double SHOOTING_POWER_MIN = 0.25;
 
     // DEFAULT SETTINGS
-    double currentShooterSpeed = TESTED_SHOOTING_POWER_CROSS_FIELD;
+    double currentShooterSpeed = SHOOTING_POWER_CROSS_FIELD;
     boolean shooterWheelStarted = false; // set true if you want to start w/o shooting wheels on.
 
     @Override
@@ -171,8 +170,8 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
 
     // TODO: complete calculation
     public double calculateShooterPower(double inches) {
-        if (inches < 24) {
-            return currentShooterSpeed;
+        if (inches < 16) {
+            return SHOOTING_POWER_MIN;
         }
         return inches * SHOOTING_POWER_PER_INCH;
     }

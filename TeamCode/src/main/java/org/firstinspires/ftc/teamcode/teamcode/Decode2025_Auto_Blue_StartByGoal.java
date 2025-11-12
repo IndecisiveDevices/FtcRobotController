@@ -13,8 +13,8 @@ import java.util.List;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
-@Autonomous(name = "Decode2025RobotCode_Auto", group = "Robot")
-public class Decode2025RobotCode_Auto extends LinearOpMode {
+@Autonomous(name = "Decode2025_Auto_Blue_StartByGoal", group = "Robot")
+public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
     MecanumDrive driver = new MecanumDrive();
     Carousel carousel = new Carousel();
     AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
@@ -31,7 +31,12 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    final double MAX_SHOOTING_POWER = 0.68;
+    final double DESIRED_DISTANCE_TO_TARGET = 62.235; //  this is how close the camera should get to the target (inches)
+    final double MEASURED_CROSS_FIELD_SHOOTING_DISTANCE = 138.0;
+    final double SHOOTING_POWER_CROSS_FIELD = 0.69;
+    final double SHOOTING_MIN_POWER = 0.2; // May want to change this
+    final double SHOOTING_STARTING_POWER = 0.3;
+
 
     // April Tag IDs to look for on the Obelisk
     final int GREEN_PURPLE_PURPLE_TAG_ID = 21;
@@ -43,63 +48,53 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
     final int BLUE_TAG_ID = 20;
 
     // GAME MATCH QUICK SETTINGS
-    final int SHOOTING_TARGET_TAG_ID = RED_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
-    final double DESIRED_DISTANCE_TO_TARGET = 48.0; //  this is how close the camera should get to the target (inches)
-    final double SHOOTING_POWER_CROSS_FIELD = 0.67;
-    final double SHOOTING_POWER_CLOSE_RANGE = 0.40;
+    final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
 
     int classificationTagId = 0; // This will be set when detected by webcam
+    AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
 
     @Override public void runOpMode()
     {
-        AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
-
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
         double  drive           = 0;        // Desired forward power/speed (-1 to +1)
         double  strafe          = 0;        // Desired strafe power/speed (-1 to +1)
         double  turn            = 0;        // Desired turning power/speed (-1 to +1)
 
-        // Initialize the Apriltag Detection process
-        aprilTagsWebCam.initialize(hardwareMap, telemetry);
-        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
-
-        driver.initialize(hardwareMap);
-        carousel.initialize(hardwareMap, telemetry);
-
-        // Wait for driver to press start
-        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch START to start OpMode");
-        telemetry.update();
+        initialize();
         waitForStart();
 
-        // start the shooter wheel (TODO)
+        // start the shooter wheel
+        carousel.turnShooterOnOff(SHOOTING_STARTING_POWER);
 
+        backAwayFromStart();
+        shootAtTargetTag();
+        headToLoadingZone();
 
-        // Move forward for a few seconds so we can move off wall (if close)
-        driver.drive(0.5, 0, 0);
-        sleep(4000);
+        // if we want to use april tags to move to or away from the robot
+        // goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
+        // or
+        // goToTargetTagDistance(121.0);
 
-        driver.drive(0, 0, 0);
+        // THE END, SHUTTING DOWN
+        carousel.setShootingPower(0);
+        //aprilTagsWebCam.stop();
+    }
 
-        boolean targetReached = false;
+    private void goToTargetTagDistance(double distanceInInches) {
+        double strafe;
+        double drive;
+        double turn;
 
         // Will rotate until the SHOOTING_TARGET_TAG_ID is found.
         // Once found, will drive to target until reaching DESIRED_DISTANCE_TO_TARGET
-        while (opModeIsActive() && !targetReached)
+        while (opModeIsActive())
         {
             aprilTagsWebCam.update();
-            targetFound = false;
             shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
             classificationTagId = getClassificationTagId();
 
-            if (shootingTargetTag == null) {
-                targetFound = false;
-            } else {
-                targetFound = true;
-            }
-
             // If we have found the desired target, Drive to target Automatically. Otherwise, we will rotate
-            if (targetFound ) {
+            if (shootingTargetTag != null ) {
                 telemetry.addData("\n>","Driving to Target\n");
                 telemetry.addData("Found", "ID %d (%s)", shootingTargetTag.id, shootingTargetTag.metadata.name);
                 telemetry.addData("Range",  "%5.1f inches", shootingTargetTag.ftcPose.range);
@@ -107,7 +102,7 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
                 telemetry.addData("Yaw","%3.0f degrees", shootingTargetTag.ftcPose.yaw);
 
                 // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double  rangeError      = (shootingTargetTag.ftcPose.range - DESIRED_DISTANCE_TO_TARGET);
+                double  rangeError      = (shootingTargetTag.ftcPose.range - distanceInInches);
                 double  headingError    = shootingTargetTag.ftcPose.bearing;
                 double  yawError        = shootingTargetTag.ftcPose.yaw;
 
@@ -119,7 +114,7 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
                 telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
 
                 if (Math.abs(rangeError) < 1.2) {
-                    targetReached = true;
+                    return; // we exit out of the method when we are at the target distance.
                 }
             } else {
                 telemetry.addData("\n>","Locating Target\n");
@@ -134,19 +129,53 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
             driver.drive(drive, -strafe, -turn);
             sleep(10);
         }
+    }
 
-        // DO WE SHOOT HERE? (TODO)
+    private void headToLoadingZone() {
+        // slide left,
+        driver.drive(0.0, -1, -0);
+        sleep(1800);
+        // then rotate to face the loading zone corner
+        driver.drive(0, 0, -1);
+        sleep(660);
+
+        driver.drive(1, 0, 0);
+        sleep(2200);
+    }
+
+    private void shootAtTargetTag() {
+        // Set up shot: find target april tag to set classification tag id
+        aprilTagsWebCam.update();
+        shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+        classificationTagId = getClassificationTagId();
+
+        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
+            double newShooterPower = calculateShooterPower(shootingTargetTag.ftcPose.range);
+            carousel.setShootingPower(newShooterPower);
+        }
+
+        // Now that we set the classification tag id, we can shoot.
         shootPattern();
-        sleep(500);
+    }
 
-        // NOW, GET OFF A LAUNCH LINE.
-        // strafe (slide) left/back for a bit.
-        driver.drive(-0.5, -0.5, 0);
-        sleep(1500);
+    private void backAwayFromStart() {
+        driver.drive(-1, -0.01, 0);
+        sleep(1286);
+        driver.drive(0, 0, 0);
+    }
 
-        // THE END, SHUTTING DOWN
-        carousel.setShootingPower(0);
-        //aprilTagsWebCam.stop();
+    private void initialize() {
+        // Initialize the Apriltag Detection process
+        aprilTagsWebCam.initialize(hardwareMap, telemetry);
+        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
+
+        driver.initialize(hardwareMap);
+        carousel.initialize(hardwareMap, telemetry);
+
+        // Wait for driver to press start
+        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch START to begin");
+        telemetry.update();
     }
 
     private int getClassificationTagId() {
@@ -169,48 +198,42 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
 
     private void shootPattern() {
         if (classificationTagId == GREEN_PURPLE_PURPLE_TAG_ID) {
-            shootPatternGPP();
+            shootGreen();
+            shootPurpleOne();
+            shootPurpleTwo();
         } else if (classificationTagId == PURPLE_GREEN_PURPLE_TAG_ID) {
-            shootPatternPGP();
-        } else if (classificationTagId == PURPLE_PURPLE_GREEN_TAG_ID) {
-            shootPatternPPG();
-        } else {
-            telemetry.addLine("Unable to determine pattern. Shooting PPG pattern.");
-            shootPatternPPG();
+            shootPurpleOne();
+            shootGreen();
+            shootPurpleTwo();
+        } else { // is either PURPLE_PURPLE_GREEN_TAG_ID or the default if classificationId not found
+            shootPurpleOne();
+            shootPurpleTwo();
+            shootGreen();
         }
     }
 
     final int SLEEP_AFTER_POSITIONS = 500;
     final int SLEEP_AFTER_KICK = 800;
 
-    // NOTE: Determine which color we are loading into the slots. Then we can implement.
-    // Example if the colors are loaded as
-    // - X: Purple
-    // - A: Green
-    // - B: Purple
-    // Then this next method would be implemented as such...
-    private void shootPatternGPP() {
+    // Green Is A
+    private void shootGreen() {
         carousel.gotoShootingA();
         sleep(SLEEP_AFTER_POSITIONS);
         useKicker();
+    }
 
+    // Purple One is B
+    private void shootPurpleOne() {
         carousel.gotoShootingB();
         sleep(SLEEP_AFTER_POSITIONS);
         useKicker();
+    }
 
-        carousel.gotoShootingA();
+    // Purple Two is X
+    private void shootPurpleTwo() {
+        carousel.gotoShootingX();
         sleep(SLEEP_AFTER_POSITIONS);
         useKicker();
-    }
-
-    // (TODO)
-    private void shootPatternPGP() {
-
-    }
-
-    // (TODO)
-    private void shootPatternPPG() {
-
     }
 
     // Sets carousel.kick position to 1.0 for 1 second.
@@ -220,6 +243,13 @@ public class Decode2025RobotCode_Auto extends LinearOpMode {
         sleep(SLEEP_AFTER_KICK);
         carousel.kick(0.0);
         sleep(SLEEP_AFTER_KICK);
+    }
+
+    public double calculateShooterPower(double inches) {
+        if (inches < 16) {
+            return 0.25;
+        }
+        return inches * (SHOOTING_POWER_CROSS_FIELD / MEASURED_CROSS_FIELD_SHOOTING_DISTANCE);
     }
 
 }

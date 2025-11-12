@@ -120,6 +120,13 @@ public class Carousel {
 
     // will set the shooting power above 0 if shooterMotorIsOn is true
     public void setShootingPower(double shootingPower) {
+        if ( shootingPower < 0) {
+            shootingPower = 0;
+        }
+        if (shootingPower > 1) {
+            shootingPower = 1;
+        }
+
         shooterMotor.setPower(shooterMotorIsOn ? shootingPower : 0);
     }
 
