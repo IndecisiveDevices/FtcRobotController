@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode.mechanism;
 
-import static android.os.SystemClock.sleep;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -23,7 +22,11 @@ public class Carousel {
     public NormalizedColorSensor colorSensor0, colorSensor1;
 
     // Shooter & Intake Motors
-    public DcMotor shooterMotor, intakeMotor;
+    public DcMotorEx shooterMotor;
+    public DcMotor intakeMotor;
+
+    // This is for a REV HD Hex 20:1 motor. Change it for your specific motor!
+    private final double SHOOTER_TICKS_PER_REVOLUTION = 28 * 20; // 28 ticks * 20:1 gear ratio = 560
 
     // create Intake and Shooting positions for the carousel A, B, and C positions (2 each)
     private final double A_INTAKE_POSITION = 0.968;
@@ -42,6 +45,7 @@ public class Carousel {
     public final Slot[] allSlots = {slotA, slotB, slotX};
 
     public void initialize(HardwareMap hardwareMap, Telemetry telemetry) {
+
         this.telemetry = telemetry;
 
         carousel = hardwareMap.get(Servo.class, "carousel"); // expansion port: 0
@@ -54,8 +58,10 @@ public class Carousel {
         colorSensor1 = hardwareMap.get(NormalizedColorSensor.class, "colorSensor1");
         colorSensor1.setGain(7);
 
-        shooterMotor = hardwareMap.get(DcMotor.class, "shooterMotor"); // port 3.
+        shooterMotor = hardwareMap.get(DcMotorEx.class, "shooterMotor"); // port 3.
         shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // Set the motor to use its encoder to maintain a target velocity.
+
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor"); // port: 0
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -130,11 +136,28 @@ public class Carousel {
         shooterMotor.setPower(shooterMotorIsOn ? shootingPower : 0);
     }
 
+    /**
+     * Calculates and returns the current speed of the shooter motor in Revolutions Per Minute (RPM).
+     * @return The current motor speed in RPM.
+     */
+    public double getShooterRPM() {
+        // getVelocity() returns the speed in "encoder ticks per second"
+        double ticksPerSecond = shooterMotor.getVelocity();
+
+        // Convert ticks per second to revolutions per minute (RPM)
+        double revolutionsPerMinute = (ticksPerSecond / SHOOTER_TICKS_PER_REVOLUTION) * 60;
+
+        return revolutionsPerMinute;
+    }
+
     public void kick(double power) {
         kicker.setPosition(power);
     }
 
     public void showCarouselData() {
+        telemetry.addLine("Shooter velocity: " + shooterMotor.getVelocity());
+        telemetry.addLine("Shooter position: " + shooterMotor.getCurrentPosition());
+
         for (Slot slot : allSlots) {
             if (slot == null ) {
                 continue;

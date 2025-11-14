@@ -26,8 +26,7 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     final double TESTED_CAMERA_TO_TARGET_INCHES = 119.1; // inches between camera face and target
     final double TESTED_SHOOTING_DISTANCE_FROM_WHEEL = (CAMERA_TO_WHEEL_INCHES + TESTED_CAMERA_TO_TARGET_INCHES);
 
-    final double TESTED_SHOOTING_POWER_CROSS_FIELD = 0.69; // <<----- Tested
-    final double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
+    double TESTED_SHOOTING_POWER_CROSS_FIELD = 0.67; // <<----- Tested
 
     // GAME MATCH QUICK SETTINGS
     final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
@@ -44,8 +43,11 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         aprilTagsWebCam.initialize(hardwareMap, telemetry);
     }
 
+    double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
+
     @Override
     public void loop() {
+        SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
         // Turn on shooter wheel at start of game.
         if (!shooterWheelStarted) {
             carousel.turnShooterOnOff(currentShooterSpeed);
@@ -67,6 +69,7 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         }
 
         telemetry.addData("Shooter Power", currentShooterSpeed);
+        telemetry.addData("power per inch", SHOOTING_POWER_PER_INCH );
 
         //----------------------------
         // Drive Controls (Done)
@@ -82,6 +85,12 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         //-------------------
         // gamepad2.back: turns shooter on/off
         // gamepad2.dpad_up/down: sets shooter speed
+        if (gamepad2.dpadUpWasReleased()) {
+            TESTED_SHOOTING_POWER_CROSS_FIELD += 0.01;
+        } else if (gamepad2.dpadDownWasReleased()) {
+            TESTED_SHOOTING_POWER_CROSS_FIELD -= 0.01;
+        }
+
         //----------------------------
         // gamepad2.left_trigger: Shooting Mode.
         // IF gamepad2 left trigger is pressed
@@ -164,7 +173,9 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         if (inches < 24) {
             return currentShooterSpeed;
         }
-        return (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
+        double newPower = (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
+
+        return Math.min(newPower, .97);
     }
 
     // ---------------------------------------------------------------------

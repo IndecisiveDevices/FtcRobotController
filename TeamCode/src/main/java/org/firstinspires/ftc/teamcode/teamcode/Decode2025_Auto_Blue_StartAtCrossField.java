@@ -80,7 +80,14 @@ public class Decode2025_Auto_Blue_StartAtCrossField extends LinearOpMode {
         /// ////////////////////////////////////
         // TODO: We need to face the Obelisk and set
         // the classification tag ID so we know which order to shoot the balls
+        sleep(500); // allow a bit of time for camera to capture tag
         classificationTagId = getClassificationTagId();
+
+        /// /////////////////////////////////////
+        // FACE TARGET
+        /// ////////////////////////////////////
+        driver.drive(0,0,-0.3);
+        sleep(750);
 
         /// /////////////////////////////////////
         // SHOOTING
@@ -92,9 +99,10 @@ public class Decode2025_Auto_Blue_StartAtCrossField extends LinearOpMode {
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
         // slide right
-        driver.drive(0.0, -0.5, -0);
-        sleep(1500);
+        driver.drive(0.0, -0.0, -0.3);
+        sleep(750);
 
+        driver.drive(0,0,0);
         // if we want to use april tags to move to or away from the robot
         // goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
         // or

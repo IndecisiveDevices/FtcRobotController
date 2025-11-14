@@ -57,7 +57,7 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
     final double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
 
     // DEFAULT SETTINGS
-    double currentShooterSpeed = 0.3;  // adding value here is how to set the starting speed
+    double currentShooterSpeed = 0.5;  // adding value here is how to set the starting speed
 
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
@@ -73,24 +73,46 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         waitForStart();
 
         // start the shooter wheel
-        carousel.turnShooterOnOff(currentShooterSpeed);
+        carousel.turnShooterOnOff(0.417);
+
+        // 1: move away from goal (done)
+        // 2: turn face ob (edited done)
+        // 3: set tag Id (done)
+        // 4: turn and face the target (edited done)
+        // 5: shoot the balls in the id order (Done)
+        // 6: turn back toward the loading zone or nearby
+        // 7: shut down (transition auto to teleOp)
+
 
         /// /////////////////////////////////////
         // BACK AWAY FROM GOAL
         /// ////////////////////////////////////
         driver.drive(-1, -0.01, 0);
-        sleep(1286);
+        sleep(1986);
         driver.drive(0, 0, 0);
+
+        driver.drive(0,0,0.50);
+        sleep(1067);
+        driver.drive(0,0,0);
+
 
         /// /////////////////////////////////////
         // GET CLASSIFICATION TAG ID
         /// ////////////////////////////////////
-        // TODO: We need to face the Obelisk to get the classification order and set
         // the classification tag ID so we know what order to shoot balls in.
+        sleep(500); // give some time to allow camera to catch up
         classificationTagId = getClassificationTagId();
 
         /// /////////////////////////////////////
-        // SHOOTING
+        // GET POSITIONED TOWARD THE GOAL
+        /// ////////////////////////////////////
+        // turn the robot toward the goal to shoot the balls.
+        driver.drive(0,0,-0.50);
+        sleep(1067);
+        driver.drive(0,0,0);
+
+        /// /////////////////////////////////////
+        // SHOOTING GOAL
         /// ////////////////////////////////////
         shootAtTargetTag();
         carousel.setShootingPower(0);
@@ -125,9 +147,13 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
         if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
-            double newShooterPower = calculateShooterPower(shootingTargetTag.ftcPose.range);
-            carousel.setShootingPower(newShooterPower);
+            currentShooterSpeed = calculateShooterPower(shootingTargetTag.ftcPose.range);
+            telemetry.addData("Calculated Shooting Speed", currentShooterSpeed);
+            carousel.setShootingPower(currentShooterSpeed);
+        } else {
+            telemetry.addData("NOT Calculated Shooting Speed", currentShooterSpeed);
         }
+
 
         // Now that we set the classification tag id, we can shoot.
 
@@ -182,7 +208,7 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
 
     final int SLEEP_AFTER_POSITIONS = 1000;
     final int SLEEP_AFTER_KICK = 800;
-    final int WAIT_AFTER_SHOT = 3000;
+    final int WAIT_AFTER_SHOT = 2000;
 
     // Green Is A
     private void shootGreen() {
