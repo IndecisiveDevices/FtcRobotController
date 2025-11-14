@@ -25,8 +25,8 @@ public class Carousel {
     public DcMotorEx shooterMotor;
     public DcMotor intakeMotor;
 
-    // This is for a REV HD Hex 20:1 motor. Change it for your specific motor!
-    private final double SHOOTER_TICKS_PER_REVOLUTION = 28 * 20; // 28 ticks * 20:1 gear ratio = 560
+    private final double SHOOTER_TICKS_PER_REVOLUTION = 14; // or 28 * 0.5 gear ratio
+    private double MAX_SHOOTER_RPM = 6000;
 
     // create Intake and Shooting positions for the carousel A, B, and C positions (2 each)
     private final double A_INTAKE_POSITION = 0.968;
@@ -124,6 +124,15 @@ public class Carousel {
         setShootingPower(power);
     }
 
+    public void turnShooterOnOffByRpm(double rpm) {
+        if (shooterMotorIsOn) {
+            shooterMotorIsOn = false;
+        } else {
+            shooterMotorIsOn = true;
+        }
+        setShooterRPM(rpm);
+    }
+
     // will set the shooting power above 0 if shooterMotorIsOn is true
     public void setShootingPower(double shootingPower) {
         if ( shootingPower < 0) {
@@ -143,11 +152,15 @@ public class Carousel {
     public double getShooterRPM() {
         // getVelocity() returns the speed in "encoder ticks per second"
         double ticksPerSecond = shooterMotor.getVelocity();
-
         // Convert ticks per second to revolutions per minute (RPM)
         double revolutionsPerMinute = (ticksPerSecond / SHOOTER_TICKS_PER_REVOLUTION) * 60;
-
         return revolutionsPerMinute;
+    }
+
+    public void setShooterRPM(double rpm) {
+        rpm = Math.max(rpm, MAX_SHOOTER_RPM);
+        double ticksPerSecond = (rpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
+        shooterMotor.setVelocity(ticksPerSecond);
     }
 
     public void kick(double power) {
@@ -157,6 +170,7 @@ public class Carousel {
     public void showCarouselData() {
         telemetry.addLine("Shooter velocity: " + shooterMotor.getVelocity());
         telemetry.addLine("Shooter position: " + shooterMotor.getCurrentPosition());
+        telemetry.addLine("Configured Shooter power: " + shooterMotor.getPower());
 
         for (Slot slot : allSlots) {
             if (slot == null ) {
