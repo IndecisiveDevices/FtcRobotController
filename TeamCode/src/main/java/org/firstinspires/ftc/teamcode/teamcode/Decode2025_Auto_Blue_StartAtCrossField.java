@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -14,6 +15,7 @@ import java.util.List;
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
 @Autonomous(name = "Decode2025_Auto_Blue_StartAtCrossField", group = "Robot")
+@Disabled
 public class Decode2025_Auto_Blue_StartAtCrossField extends LinearOpMode {
     MecanumDrive driver = new MecanumDrive();
     Carousel carousel = new Carousel();

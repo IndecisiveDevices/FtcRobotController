@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "Decode2025RobotCode_TeleOp_RPM", group = "Robot")
+@Disabled
 public class Decode2025RobotCode_TeleOp_RPM extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
@@ -23,14 +25,14 @@ public class Decode2025RobotCode_TeleOp_RPM extends OpMode {
     // TODO: Verify cross-field shooting distance from center of target
     //  AprilTag to back of shooting wheel.
     final double CAMERA_TO_WHEEL_INCHES = 10.0; // inches between camera face and back of shooter wheel
-    final double TESTED_CAMERA_TO_TARGET_INCHES = 119.1; // inches between camera face and target
+    final double TESTED_CAMERA_TO_TARGET_INCHES = 120.1; // inches between camera face and target
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
     double currentRpm = RPM_OF_SHOT_WHEN_TESTED;
 
     // GAME MATCH QUICK SETTINGS
-    final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
+    int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
 
     // DEFAULT SETTINGS
     boolean shooterWheelStarted = false; // set true if you want to start w/o shooting wheels on.
@@ -47,9 +49,26 @@ public class Decode2025RobotCode_TeleOp_RPM extends OpMode {
     @Override
     public void loop() {
         // Turn on shooter wheel at start of game.
-        if (!shooterWheelStarted || gamepad2.startWasReleased()) {
+        if (!shooterWheelStarted) {
             carousel.turnShooterOnOffByRpm(currentRpm);
             shooterWheelStarted = true;
+        }
+
+        if (gamepad2.backWasReleased()){
+            carousel.turnShooterOnOffByRpm(currentRpm);
+        }
+
+        if (gamepad1.xWasReleased()) {
+            SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;
+        }
+        else if (gamepad1.bWasReleased()) {
+            SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
+        }
+        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
+            telemetry.addData("Target tag: ", "Blue");
+        }
+        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+            telemetry.addData("Target tag: ", "Red");
         }
 
         aprilTagsWebCam.update();
@@ -88,17 +107,20 @@ public class Decode2025RobotCode_TeleOp_RPM extends OpMode {
             }
         }
 
+        telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
+
         if (useCalculatedVelocity) {
             currentRpm = calculateShooterRPM(distanceToTarget);
         } else {
             // gamepad2.back: turns shooter on/off
             // gamepad2.dpad_up/down: sets shooter speed
             if (gamepad2.dpadUpWasReleased()) {
-                currentRpm += 50;
+                currentRpm += 85.7;
             } else if (gamepad2.dpadDownWasReleased()) {
-                currentRpm -= 50;
+                currentRpm -= 85.7;
             }
         }
+        telemetry.addData("Shooter currentRpm: " , currentRpm);
         carousel.setShooterRPM(currentRpm);
 
         //----------------------------

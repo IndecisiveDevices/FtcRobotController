@@ -57,7 +57,7 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
     double SHOOT_FROM_DISTANCE = 48.0; // <--- Change this if/when we know how far we are shooting from.
 
     // DEFAULT SETTINGS
-    double currentRpm = RPM_NEEDED_PER_INCH * SHOOT_FROM_DISTANCE;
+    double currentRpm = 4000; //RPM_NEEDED_PER_INCH * SHOOT_FROM_DISTANCE;
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
 
@@ -74,6 +74,8 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
         // start the shooter wheel
         carousel.turnShooterOnOffByRpm(currentRpm);
 
+        moveRobot(0.1,0,0.0);
+
         /// /////////////////////////////////////
         // GET CLASSIFICATION TAG ID
         /// ////////////////////////////////////
@@ -84,8 +86,9 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
         /// /////////////////////////////////////
         // FACE TARGET
         /// ////////////////////////////////////
-        moveRobot(0,0,-0.3);
-        sleep(750);
+        moveRobot(0,0,-0.1);
+        sleep(1000);
+        moveRobot(0, 0, 0);
 
         /// /////////////////////////////////////
         // SHOOTING
@@ -97,8 +100,8 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
         // slide right
-        moveRobot(0.0, -0.0, -0.3);
-        sleep(750);
+        moveRobot(0.0, 1, 0);
+        sleep(1500);
 
         moveRobot(0,0,0);
 
@@ -128,10 +131,10 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
         aprilTagsWebCam.update();
         shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
-        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
-            double newShooterPower = calculateShooterRPM(shootingTargetTag.ftcPose.range);
-            carousel.setShootingPower(newShooterPower);
-        }
+//        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
+//            double newShooterPower = calculateShooterRPM(shootingTargetTag.ftcPose.range);
+//            carousel.setShootingPower(newShooterPower);
+//        }
 
         // Now that we set the classification tag id, we can shoot.
 
@@ -151,12 +154,12 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
     }
 
     private void waitForShooterWheel() {
-        // create a while loop that checks the carousel.getShooterRpm()
-        // and if it hasn't reached currentRpm yet, sleep(200) until it does
-        // getShooterRPM returns values in increments of 85.7
-        while (Math.abs(carousel.getShooterRPM() - currentRpm) > 85.0) {
-            sleep(200);
-        }
+//        // create a while loop that checks the carousel.getShooterRpm()
+//        // and if it hasn't reached currentRpm yet, sleep(200) until it does
+//        // getShooterRPM returns values in increments of 85.7
+//        while (Math.abs(carousel.getShooterRPM() - currentRpm) > 85.0) {
+//            sleep(200);
+//        }
     }
 
     private void initialize() {

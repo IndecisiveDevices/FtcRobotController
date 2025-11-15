@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,9 +9,8 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp(name = "Decode2025RobotCode_TeleOp", group = "Robot")
-@Disabled
-public class Decode2025RobotCode_TeleOp extends OpMode {
+@TeleOp(name = "Decode2025RobotCode_TeleOp_RPM_SlowStart", group = "Robot")
+public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
@@ -25,17 +23,18 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
     // TODO: Verify cross-field shooting distance from center of target
     //  AprilTag to back of shooting wheel.
     final double CAMERA_TO_WHEEL_INCHES = 10.0; // inches between camera face and back of shooter wheel
-    final double TESTED_CAMERA_TO_TARGET_INCHES = 119.1; // inches between camera face and target
-    final double TESTED_SHOOTING_DISTANCE_FROM_WHEEL = (CAMERA_TO_WHEEL_INCHES + TESTED_CAMERA_TO_TARGET_INCHES);
-
-    double TESTED_SHOOTING_POWER_CROSS_FIELD = 0.67; // <<----- Tested
+    final double TESTED_CAMERA_TO_TARGET_INCHES = 120.1; // inches between camera face and target
+    final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
+    final double MAX_RPM = 5800;
+    final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
+    double currentRpm = 2500; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
     // GAME MATCH QUICK SETTINGS
-    final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
+    int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
 
     // DEFAULT SETTINGS
-    double currentShooterSpeed = TESTED_SHOOTING_POWER_CROSS_FIELD;
     boolean shooterWheelStarted = false; // set true if you want to start w/o shooting wheels on.
+    private boolean useCalculatedVelocity = false;
 
     @Override
     public void init() {
@@ -45,15 +44,29 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         aprilTagsWebCam.initialize(hardwareMap, telemetry);
     }
 
-    double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
-
     @Override
     public void loop() {
-        SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
         // Turn on shooter wheel at start of game.
         if (!shooterWheelStarted) {
-            carousel.turnShooterOnOff(currentShooterSpeed);
+            carousel.turnShooterOnOffByRpm(currentRpm);
             shooterWheelStarted = true;
+        }
+
+        if (gamepad2.backWasReleased()){
+            carousel.turnShooterOnOffByRpm(currentRpm);
+        }
+
+        if (gamepad1.xWasReleased()) {
+            SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;
+        }
+        else if (gamepad1.bWasReleased()) {
+            SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
+        }
+        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
+            telemetry.addData("Target tag: ", "Blue");
+        }
+        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+            telemetry.addData("Target tag: ", "Red");
         }
 
         aprilTagsWebCam.update();
@@ -70,9 +83,6 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
             aprilTagsWebCam.displayDetectionTelemetry(targetTag);
         }
 
-        telemetry.addData("Shooter Power", currentShooterSpeed);
-        telemetry.addData("power per inch", SHOOTING_POWER_PER_INCH );
-
         //----------------------------
         // Drive Controls (Done)
         //----------------------------
@@ -85,13 +95,31 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         //-------------------
         // Carousel Controls
         //-------------------
-        // gamepad2.back: turns shooter on/off
-        // gamepad2.dpad_up/down: sets shooter speed
-        if (gamepad2.dpadUpWasReleased()) {
-            TESTED_SHOOTING_POWER_CROSS_FIELD += 0.01;
-        } else if (gamepad2.dpadDownWasReleased()) {
-            TESTED_SHOOTING_POWER_CROSS_FIELD -= 0.01;
-        }
+
+//        // Set shooter speed based on distance to target
+//        if (gamepad2.startWasReleased()) {
+//            if (useCalculatedVelocity) {
+//                useCalculatedVelocity = false;
+//            } else {
+//                useCalculatedVelocity = true;
+//            }
+//        }
+
+        telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
+
+//        if (useCalculatedVelocity) {
+//            currentRpm = calculateShooterRPM(distanceToTarget);
+//        } else {
+            // gamepad2.back: turns shooter on/off
+            // gamepad2.dpad_up/down: sets shooter speed
+            if (gamepad2.dpadUpWasReleased()) {
+                currentRpm += 100;
+            } else if (gamepad2.dpadDownWasReleased()) {
+                currentRpm -= 100;
+            }
+//        }
+//        telemetry.addData("Shooter currentRpm: " , currentRpm);
+        carousel.setShooterRPM(currentRpm);
 
         //----------------------------
         // gamepad2.left_trigger: Shooting Mode.
@@ -102,14 +130,6 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         //  - buttons X, B, A will go to intake positions
         //  - kicker will be set to down
         //----------------------------
-        if (gamepad2.backWasPressed()) {
-            carousel.turnShooterOnOff(currentShooterSpeed);
-        }
-
-        // Set shooter speed based on distance to target
-        currentShooterSpeed = calculateShooterPower(distanceToTarget);
-        carousel.setShootingPower(currentShooterSpeed);
-
         if (gamepad2.left_trigger > 0) {
             if (gamepad2.b) {
                 carousel.gotoShootingB();
@@ -171,13 +191,13 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         telemetry.update();
     }
 
-    public double calculateShooterPower(double inches) {
-        if (inches < 24) {
-            return currentShooterSpeed;
+    public double calculateShooterRPM(double inches) {
+        if (inches < 16) {
+            return currentRpm;
         }
-        double newPower = (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
+        double newRPM = (inches + TESTED_CAMERA_TO_TARGET_INCHES) * RPM_NEEDED_PER_INCH;
 
-        return Math.min(newPower, .97);
+        return Math.min(newRPM, MAX_RPM);
     }
 
     // ---------------------------------------------------------------------

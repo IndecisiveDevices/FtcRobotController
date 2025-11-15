@@ -158,9 +158,10 @@ public class Carousel {
     }
 
     public void setShooterRPM(double rpm) {
-        rpm = Math.max(rpm, MAX_SHOOTER_RPM);
+        rpm = Math.min(rpm, MAX_SHOOTER_RPM);
         double ticksPerSecond = (rpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
-        shooterMotor.setVelocity(ticksPerSecond);
+        telemetry.addLine("ticketPerSecond" + ticksPerSecond);
+        shooterMotor.setVelocity(shooterMotorIsOn ? ticksPerSecond : 0);
     }
 
     public void kick(double power) {
@@ -170,32 +171,32 @@ public class Carousel {
     public void showCarouselData() {
         telemetry.addLine("Shooter velocity: " + shooterMotor.getVelocity());
         telemetry.addLine("Shooter position: " + shooterMotor.getCurrentPosition());
-        telemetry.addLine("Configured Shooter power: " + shooterMotor.getPower());
-
-        for (Slot slot : allSlots) {
-            if (slot == null ) {
-                continue;
-            }
-            telemetry.addLine("Slot: " + slot.name);
-            telemetry.addLine("  Color: " + slot.color.toString());
-
-            if (slot.isReadyForIntake()) {
-                telemetry.addLine("  Ready for Intake: " + "✅");
-            } else {
-                telemetry.addLine("  Ready for Intake: " + "❌");
-            }
-
-            if (slot.isReadyForShot()) {
-                telemetry.addLine("  Ready for Shot: " + "✅");
-            } else {
-                telemetry.addLine("  Ready for Shot: " + "❌");
-            }
-        }
-
-        // display if intake motor is on or off
-        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "ON" : "OFF"));
-        telemetry.addLine("Carousel Position: " + carousel.getPosition());
-        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
+//        telemetry.addLine("Configured Shooter power: " + shooterMotor.getPower());
+//
+//        for (Slot slot : allSlots) {
+//            if (slot == null ) {
+//                continue;
+//            }
+//            telemetry.addLine("Slot: " + slot.name);
+//            telemetry.addLine("  Color: " + slot.color.toString());
+//
+//            if (slot.isReadyForIntake()) {
+//                telemetry.addLine("  Ready for Intake: " + "✅");
+//            } else {
+//                telemetry.addLine("  Ready for Intake: " + "❌");
+//            }
+//
+//            if (slot.isReadyForShot()) {
+//                telemetry.addLine("  Ready for Shot: " + "✅");
+//            } else {
+//                telemetry.addLine("  Ready for Shot: " + "❌");
+//            }
+//        }
+//
+//        // display if intake motor is on or off
+//        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "ON" : "OFF"));
+//        telemetry.addLine("Carousel Position: " + carousel.getPosition());
+//        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
     }
 
     /*****************************************************************************************

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.Range;
 
@@ -14,9 +13,8 @@ import java.util.List;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
-@Autonomous(name = "Decode2025_Auto_Blue_StartByGoal", group = "Robot")
-@Disabled
-public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
+@Autonomous(name = "Decode2025_Auto_Red_ByGoal_RPM", group = "Robot")
+public class Decode2025_Auto_Red_ByGoal_RPM extends LinearOpMode {
     MecanumDrive driver = new MecanumDrive();
     Carousel carousel = new Carousel();
     AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
@@ -47,19 +45,18 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
     final int BLUE_TAG_ID = 20;
 
     // GAME MATCH QUICK SETTINGS
-    final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
+    final int SHOOTING_TARGET_TAG_ID = RED_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
 
     // TODO: Verify cross-field shooting distance from center of target
     //  AprilTag to back of shooting wheel.
     final double CAMERA_TO_WHEEL_INCHES = 10.0; // inches between camera face and back of shooter wheel
     final double TESTED_CAMERA_TO_TARGET_INCHES = 119.1; // inches between camera face and target
-    final double TESTED_SHOOTING_DISTANCE_FROM_WHEEL = (CAMERA_TO_WHEEL_INCHES + TESTED_CAMERA_TO_TARGET_INCHES);
-
-    final double TESTED_SHOOTING_POWER_CROSS_FIELD = 0.69; // <<----- Tested
-    final double SHOOTING_POWER_PER_INCH = (TESTED_SHOOTING_POWER_CROSS_FIELD / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
+    final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
+    final double MAX_RPM = 5800;
+    final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
+    double currentRpm = 2500; // RPM_OF_SHOT_WHEN_TESTED;
 
     // DEFAULT SETTINGS
-    double currentShooterSpeed = 0.5;  // adding value here is how to set the starting speed
 
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
@@ -75,7 +72,7 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         waitForStart();
 
         // start the shooter wheel
-        carousel.turnShooterOnOff(0.417);
+        carousel.turnShooterOnOffByRpm(currentRpm);
 
         // 1: move away from goal (done)
         // 2: turn face ob (edited done)
@@ -89,13 +86,13 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         /// /////////////////////////////////////
         // BACK AWAY FROM GOAL
         /// ////////////////////////////////////
-        driver.drive(-1, -0.01, 0);
-        sleep(1986);
-        driver.drive(0, 0, 0);
+        moveRobot(-1, -0.01, 0);
+        sleep(1460);
+        moveRobot(0, 0, 0);
 
-        driver.drive(0,0,0.50);
+        moveRobot(0,0,0.50);
         sleep(1067);
-        driver.drive(0,0,0);
+        moveRobot(0,0,0);
 
 
         /// /////////////////////////////////////
@@ -109,9 +106,9 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         // GET POSITIONED TOWARD THE GOAL
         /// ////////////////////////////////////
         // turn the robot toward the goal to shoot the balls.
-        driver.drive(0,0,-0.50);
+        moveRobot(0,0,-0.50);
         sleep(1067);
-        driver.drive(0,0,0);
+        moveRobot(0,0,0);
 
         /// /////////////////////////////////////
         // SHOOTING GOAL
@@ -122,17 +119,15 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         /// /////////////////////////////////////
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
-        // slide left,
-        driver.drive(0.0, -0.5, -0);
-        sleep(1238);
+        // rotate a bit, toward the loading zone
+        moveRobot(0.0, 0, 0.2);
+        sleep(550);
 
-        // then rotate to face the loading zone
-        driver.drive(0, 0, -0.5);
-        sleep(1200);
+        // then move backward to the loading zone
+        moveRobot(0.4, 0, 0);
+        sleep(1300);
 
-        // then drive to loading zone
-        driver.drive(1, 0, 0);
-        sleep(2200);
+        carousel.turnShooterOnOffByRpm(0);
 
         // if we want to use april tags to move to or away from the robot
         // goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
@@ -143,19 +138,25 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         //aprilTagsWebCam.stop();
     }
 
+    public void moveRobot(double forward, double strafe, double turn) {
+        // We created movements based on BLUE side of the field. So, if we switch
+        // to Red, we need to flip the strafe and turn values. Forward will
+        // still remain the same.
+        if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+            strafe = -strafe;
+            turn = -turn;
+        }
+        driver.drive(forward, strafe, turn);
+    }
 
-    private void shootAtTargetTag() {
+    public void shootAtTargetTag() {
         aprilTagsWebCam.update();
         shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
-        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
-            currentShooterSpeed = calculateShooterPower(shootingTargetTag.ftcPose.range);
-            telemetry.addData("Calculated Shooting Speed", currentShooterSpeed);
-            carousel.setShootingPower(currentShooterSpeed);
-        } else {
-            telemetry.addData("NOT Calculated Shooting Speed", currentShooterSpeed);
-        }
-
+//        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
+//            double newShooterPower = calculateShooterRPM(shootingTargetTag.ftcPose.range);
+//            carousel.setShootingPower(newShooterPower);
+//        }
 
         // Now that we set the classification tag id, we can shoot.
 
@@ -172,6 +173,15 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
             shootPurpleTwo();
             shootGreen();
         }
+    }
+
+    private void waitForShooterWheel() {
+        // create a while loop that checks the carousel.getShooterRpm()
+        // and if it hasn't reached currentRpm yet, sleep(200) until it does
+        // getShooterRPM returns values in increments of 85.7
+//        while (Math.abs(carousel.getShooterRPM() - currentRpm)  85.0) {
+//            sleep(200);
+//        }
     }
 
     private void initialize() {
@@ -210,30 +220,29 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
 
     final int SLEEP_AFTER_POSITIONS = 1000;
     final int SLEEP_AFTER_KICK = 800;
-    final int WAIT_AFTER_SHOT = 2000;
 
     // Green Is A
     private void shootGreen() {
         carousel.gotoShootingA();
         sleep(SLEEP_AFTER_POSITIONS);
+        waitForShooterWheel();
         useKicker();
-        sleep(WAIT_AFTER_SHOT);
     }
 
     // Purple One is B
     private void shootPurpleOne() {
         carousel.gotoShootingB();
         sleep(SLEEP_AFTER_POSITIONS);
+        waitForShooterWheel();
         useKicker();
-        sleep(WAIT_AFTER_SHOT);
     }
 
     // Purple Two is X
     private void shootPurpleTwo() {
         carousel.gotoShootingX();
         sleep(SLEEP_AFTER_POSITIONS);
+        waitForShooterWheel();
         useKicker();
-        sleep(WAIT_AFTER_SHOT);
     }
 
     // Sets carousel.kick position to 1.0 for 1 second.
@@ -245,11 +254,13 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
         sleep(SLEEP_AFTER_KICK);
     }
 
-    public double calculateShooterPower(double inches) {
-        if (inches < 24) {
-            return currentShooterSpeed;
+    public double calculateShooterRPM(double inches) {
+        if (inches < 16) {
+            return currentRpm;
         }
-        return (inches + TESTED_CAMERA_TO_TARGET_INCHES) * SHOOTING_POWER_PER_INCH;
+        double newRPM = (inches + TESTED_CAMERA_TO_TARGET_INCHES) * RPM_NEEDED_PER_INCH;
+
+        return Math.min(newRPM, MAX_RPM);
     }
 
     // Use april tag to auto move the bot to target until you reach distanceToTagInches.
@@ -301,7 +312,7 @@ public class Decode2025_Auto_Blue_StartByGoal extends LinearOpMode {
             telemetry.update();
 
             // Apply desired axes motions to the drivetrain.
-            driver.drive(drive, -strafe, -turn);
+            moveRobot(drive, -strafe, -turn);
             sleep(10);
         }
     }

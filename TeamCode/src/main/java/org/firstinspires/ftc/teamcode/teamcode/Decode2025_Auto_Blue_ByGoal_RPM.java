@@ -54,7 +54,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
-    double currentRpm = RPM_OF_SHOT_WHEN_TESTED;
+    double currentRpm = 2500; // RPM_OF_SHOT_WHEN_TESTED;
 
     // DEFAULT SETTINGS
 
@@ -87,7 +87,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         // BACK AWAY FROM GOAL
         /// ////////////////////////////////////
         moveRobot(-1, -0.01, 0);
-        sleep(1986);
+        sleep(1460);
         moveRobot(0, 0, 0);
 
         moveRobot(0,0,0.50);
@@ -119,17 +119,13 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         /// /////////////////////////////////////
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
-        // slide left,
-        moveRobot(0.0, -0.5, -0);
-        sleep(1238);
+        // rotate a bit, toward the loading zone
+        moveRobot(0.0, 0, 0.2);
+        sleep(550);
 
-        // then rotate to face the loading zone
-        moveRobot(0, 0, -0.5);
-        sleep(1200);
-
-        // then drive to loading zone
-        moveRobot(1, 0, 0);
-        sleep(2200);
+        // then move backward to the loading zone
+        moveRobot(0.4, 0, 0);
+        sleep(1300);
 
         carousel.turnShooterOnOffByRpm(0);
 
@@ -157,10 +153,10 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         aprilTagsWebCam.update();
         shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
-        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
-            double newShooterPower = calculateShooterRPM(shootingTargetTag.ftcPose.range);
-            carousel.setShootingPower(newShooterPower);
-        }
+//        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
+//            double newShooterPower = calculateShooterRPM(shootingTargetTag.ftcPose.range);
+//            carousel.setShootingPower(newShooterPower);
+//        }
 
         // Now that we set the classification tag id, we can shoot.
 
@@ -183,9 +179,9 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         // create a while loop that checks the carousel.getShooterRpm()
         // and if it hasn't reached currentRpm yet, sleep(200) until it does
         // getShooterRPM returns values in increments of 85.7
-        while (Math.abs(carousel.getShooterRPM() - currentRpm) > 85.0) {
-            sleep(200);
-        }
+//        while (Math.abs(carousel.getShooterRPM() - currentRpm)  85.0) {
+//            sleep(200);
+//        }
     }
 
     private void initialize() {
