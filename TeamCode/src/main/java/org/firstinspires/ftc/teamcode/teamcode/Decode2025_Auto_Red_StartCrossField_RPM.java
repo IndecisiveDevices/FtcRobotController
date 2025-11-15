@@ -54,7 +54,7 @@ public class Decode2025_Auto_Red_StartCrossField_RPM extends Decode2025_Auto_Blu
     double SHOOT_FROM_DISTANCE = 48.0; // <--- Change this if/when we know how far we are shooting from.
 
     // DEFAULT SETTINGS
-    double currentRpm = 4000; //RPM_NEEDED_PER_INCH * SHOOT_FROM_DISTANCE;
+    double currentRpm = 3500; //RPM_NEEDED_PER_INCH * SHOOT_FROM_DISTANCE;
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
 
@@ -97,8 +97,8 @@ public class Decode2025_Auto_Red_StartCrossField_RPM extends Decode2025_Auto_Blu
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
         // slide right
-        moveRobot(0.0, 1, 0);
-        sleep(1500);
+        moveRobot(0.9, 0, 0);
+        sleep(1000);
 
         moveRobot(0,0,0);
 

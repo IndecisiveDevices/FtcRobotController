@@ -68,14 +68,14 @@ public class Lift {
 
     // Left motors
     public void liftDown(double power) {
-        liftMotor0.setTargetPosition(0);
-        liftMotor1.setTargetPosition(0);
+//        liftMotor0.setTargetPosition(0);
+//        liftMotor1.setTargetPosition(0);
+//
+//        liftMotor0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        liftMotor0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        liftMotor0.setPower(power);
-        liftMotor1.setPower(power);
+        liftMotor0.setPower(-power);
+        liftMotor1.setPower(-power);
     }
 
     public void stopLift() {
