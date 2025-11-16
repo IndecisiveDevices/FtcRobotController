@@ -71,6 +71,7 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
         initialize();
         waitForStart();
 
+
         // start the shooter wheel
         carousel.turnShooterOnOffByRpm(currentRpm);
 
@@ -90,18 +91,22 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends LinearOpMode {
         sleep(1000);
         moveRobot(0, 0, 0);
 
+        sleep(3500);
+
         /// /////////////////////////////////////
         // SHOOTING
         /// ////////////////////////////////////
+        carousel.turnIntakeMotorOnOff();
         shootAtTargetTag();
         carousel.setShootingPower(0);
 
+        carousel.turnIntakeMotorOnOff();
         /// /////////////////////////////////////
-        // GO BACK TO LOADING ZONE OR NEARBY
+        // Move away from launch line
         /// ////////////////////////////////////
         // slide right
         moveRobot(0.9, 0, 0);
-        sleep(1000);
+        sleep(1300);
 
         moveRobot(0,0,0);
 

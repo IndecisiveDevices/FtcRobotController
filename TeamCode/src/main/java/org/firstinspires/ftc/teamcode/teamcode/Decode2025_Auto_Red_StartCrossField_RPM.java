@@ -94,11 +94,11 @@ public class Decode2025_Auto_Red_StartCrossField_RPM extends Decode2025_Auto_Blu
         carousel.setShootingPower(0);
 
         /// /////////////////////////////////////
-        // GO BACK TO LOADING ZONE OR NEARBY
+        // Move away from launch line
         /// ////////////////////////////////////
         // slide right
         moveRobot(0.9, 0, 0);
-        sleep(1000);
+        sleep(1250);
 
         moveRobot(0,0,0);
 
