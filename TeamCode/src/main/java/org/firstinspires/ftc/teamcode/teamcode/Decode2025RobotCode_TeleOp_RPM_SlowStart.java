@@ -9,7 +9,7 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp(name = "Decode2025RobotCode_TeleOp_RPM_SlowStart", group = "Robot")
+@TeleOp(name = "Decode2025RobotCode_TeleOp_RPM_SlowStart", group = "Decode")
 public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();

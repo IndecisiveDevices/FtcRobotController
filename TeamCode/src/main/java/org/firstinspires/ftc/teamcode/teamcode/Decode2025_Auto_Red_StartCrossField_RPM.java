@@ -10,7 +10,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.List;
 
-@Autonomous(name = "Decode2025_Auto_Red_StartCrossField_RPM", group = "Robot")
+@Autonomous(name = "Decode2025_Auto_Red_StartCrossField_RPM", group = "Auto Red")
 public class Decode2025_Auto_Red_StartCrossField_RPM extends Decode2025_Auto_Blue_StartAtCrossField_RPM {
     MecanumDrive driver = new MecanumDrive();
     Carousel carousel = new Carousel();

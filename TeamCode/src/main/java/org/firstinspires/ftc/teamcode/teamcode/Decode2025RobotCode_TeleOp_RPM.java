@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp(name = "Decode2025RobotCode_TeleOp_RPM", group = "Robot")
+@TeleOp(name = "Decode2025RobotCode_TeleOp_RPM", group = "Decode")
 @Disabled
 public class Decode2025RobotCode_TeleOp_RPM extends OpMode {
     MecanumDrive driver = new MecanumDrive();

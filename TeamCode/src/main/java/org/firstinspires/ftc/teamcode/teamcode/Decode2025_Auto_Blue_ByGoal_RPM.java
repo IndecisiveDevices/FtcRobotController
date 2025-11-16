@@ -13,7 +13,7 @@ import java.util.List;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
-@Autonomous(name = "Decode2025_Auto_Blue_ByGoal_RPM", group = "Robot")
+@Autonomous(name = "Decode2025_Auto_Blue_ByGoal_RPM", group = "Auto Blue")
 public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     MecanumDrive driver = new MecanumDrive();
     Carousel carousel = new Carousel();

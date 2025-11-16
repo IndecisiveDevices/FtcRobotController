@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 
-@TeleOp(name = "ServoTest2025RobotCode_TeleOp", group = "Robot")
+@TeleOp(name = "ServoTest2025RobotCode_TeleOp", group = "TEST")
 public class ServoTest2025RobotCode_TeleOp extends OpMode {
 
     NormalizedColorSensor colorSensor0;

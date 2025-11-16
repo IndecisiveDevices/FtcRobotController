@@ -11,7 +11,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.List;
 
-@TeleOp(name = "TEST_With_Increment_power", group = "Robot")
+@TeleOp(name = "TEST_With_Increment_power", group = "TEST")
 public class TEST_With_Increment_power extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
