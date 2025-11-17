@@ -131,11 +131,11 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         //  - kicker will be set to down
         //----------------------------
         if (gamepad2.left_trigger > 0) {
-            if (gamepad2.b) {
+            if (gamepad2.bWasPressed()) {
                 carousel.gotoShootingB();
-            } else if (gamepad2.x) {
+            } else if (gamepad2.xWasPressed()) {
                 carousel.gotoShootingX();
-            } else if (gamepad2.a) {
+            } else if (gamepad2.aWasPressed()) {
                 carousel.gotoShootingA();
             } else {
                 if (gamepad2.right_trigger > 0) {

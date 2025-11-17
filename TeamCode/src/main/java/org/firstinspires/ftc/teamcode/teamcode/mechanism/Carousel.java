@@ -67,6 +67,107 @@ public class Carousel {
 
     }
 
+    /**
+     * Rotates carousel clockwise to the next Slot intake position.
+     * The order from lower (0.016) to higher (0.968)
+     *  Slot C  --> Slot B --> Slot A
+     */
+    public void nextRightIntakePosition() {
+        saveSlotColor();
+        double currentPosition = carousel.getPosition() + 0.001;
+        Slot nextSlot = null;
+
+        // We want to move clockwise (right) to the next position
+        // so that means we need to order our if/else condition to
+        // evaluate the smallest intake positions first.
+        // Intake positions are
+        // - 0.016 (X): if current servo position is less than this, move to this position X
+        // - 0.482 (B): if it is less than this, move to this position B
+        // - 0.968 (A): if it is less than this, move to this position A
+        // - if greater than A, go back to X.
+        if (currentPosition < slotX.intakePosition) {
+            nextSlot = slotX;
+        } else if (currentPosition < slotB.intakePosition) {
+            nextSlot = slotB;
+        } else if (currentPosition < slotA.intakePosition) {
+            nextSlot = slotA;
+        } else {
+            nextSlot = slotX;
+        }
+
+        carousel.setPosition(nextSlot.intakePosition);
+        telemetry.addData("Intake Set to Slot: ", nextSlot.name);
+    }
+
+    /**
+     * Rotates carousel counter-clockwise to the next Slot intake position.
+     * The order from lower (0.000) to higher (0.929)
+     *  Slot B <--  Slot A <-- Slot C
+     */
+    public void nextLeftIntakePosition() {
+        saveSlotColor();
+        double currentPosition = carousel.getPosition() - 0.001;
+        Slot nextSlot = null;
+
+        if (currentPosition > slotB.intakePosition) {
+            nextSlot = slotB;
+        } else if (currentPosition > slotA.intakePosition) {
+            nextSlot = slotA;
+        } else if (currentPosition > slotX.intakePosition) {
+            nextSlot = slotX;
+        } else {
+            nextSlot = slotB;
+        }
+
+        carousel.setPosition(nextSlot.intakePosition);
+        telemetry.addData( "Intake Set to Slot: ",  nextSlot.name);
+    }
+
+
+    /**
+     * Rotates carousel counter-clockwise to the next Slot intake position.
+     * The order from lower (0.000) to higher (0.929)
+     *  Slot B <--  Slot A <-- Slot C
+     */
+    public void nextRightShootingPosition() {
+        saveSlotColor();
+        double currentPosition = carousel.getPosition() + 0.001;
+        Slot nextSlot = null;
+
+        if (currentPosition < slotB.shootingPosition) {
+            nextSlot = slotB;
+        } else if (currentPosition < slotA.shootingPosition) {
+            nextSlot = slotA;
+        } else if (currentPosition < slotX.shootingPosition) {
+            nextSlot = slotX;
+        } else {
+            nextSlot = slotB;
+        }
+
+        carousel.setPosition(nextSlot.shootingPosition);
+        telemetry.addData("Shooting Set to Slot: ", nextSlot.name);
+
+    }
+
+    public void nextLeftShootingPosition() {
+        saveSlotColor();
+        double currentPosition = carousel.getPosition() - 0.001;
+        Slot nextSlot = null;
+
+        if (currentPosition > slotX.shootingPosition) {
+            nextSlot = slotX;
+        } else if (currentPosition > slotA.shootingPosition) {
+            nextSlot = slotA;
+        } else if (currentPosition > slotB.shootingPosition) {
+            nextSlot = slotB;
+        } else {
+            nextSlot = slotX;
+        }
+
+        carousel.setPosition(nextSlot.shootingPosition);
+        telemetry.addData("Shooting Set to Slot: ", nextSlot.name);
+    }
+
     public void gotoIntakeA() {
         saveSlotColor();
         carousel.setPosition(slotA.intakePosition);
@@ -171,32 +272,28 @@ public class Carousel {
     public void showCarouselData() {
         telemetry.addLine("Shooter velocity: " + shooterMotor.getVelocity());
         telemetry.addLine("Shooter position: " + shooterMotor.getCurrentPosition());
-//        telemetry.addLine("Configured Shooter power: " + shooterMotor.getPower());
-//
-//        for (Slot slot : allSlots) {
-//            if (slot == null ) {
-//                continue;
-//            }
-//            telemetry.addLine("Slot: " + slot.name);
-//            telemetry.addLine("  Color: " + slot.color.toString());
-//
-//            if (slot.isReadyForIntake()) {
-//                telemetry.addLine("  Ready for Intake: " + "✅");
-//            } else {
-//                telemetry.addLine("  Ready for Intake: " + "❌");
-//            }
-//
-//            if (slot.isReadyForShot()) {
-//                telemetry.addLine("  Ready for Shot: " + "✅");
-//            } else {
-//                telemetry.addLine("  Ready for Shot: " + "❌");
-//            }
-//        }
-//
-//        // display if intake motor is on or off
-//        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "ON" : "OFF"));
-//        telemetry.addLine("Carousel Position: " + carousel.getPosition());
-//        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
+
+        for (Slot slot : allSlots) {
+            if (slot == null ) {
+                continue;
+            }
+
+            String colorEmoji = NONE_EMOJI;
+            if (slot.color == ClassificationColor.Green) {
+                colorEmoji = GREEN_EMOJI;
+            } else if (slot.color == ClassificationColor.Purple) {
+                colorEmoji = PURPLE_EMOJI;
+            }
+
+            telemetry.addLine("Slot: " + slot.name + " " + colorEmoji);
+            telemetry.addLine("  Ready for Intake: " + (slot.isReadyForIntake() ? READY_EMOJI : NOT_READY_EMOJI ));
+            telemetry.addLine("  Ready for Shot: " + (slot.isReadyForShot() ? READY_EMOJI : NOT_READY_EMOJI));
+        }
+
+        // display if intake motor is on or off
+        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "ON" : "OFF"));
+        telemetry.addLine("Carousel Position: " + carousel.getPosition());
+        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
     }
 
     /*****************************************************************************************
@@ -269,6 +366,11 @@ public class Carousel {
         }
     }
 
+    private static final String PURPLE_EMOJI = "🟣";
+    private static final String GREEN_EMOJI = "🟢";
+    private static final String NONE_EMOJI = "⚪";
+    private static final String READY_EMOJI = "✅";
+    private static final String NOT_READY_EMOJI = "❌";
 
     private void readColor(NormalizedColorSensor colorSensor) {
         telemetry.addData("Light Detected", ((OpticalDistanceSensor) colorSensor).getLightDetected());
@@ -285,7 +387,7 @@ public class Carousel {
         }
     }
 
-    private void removeSlotColor() {
+    private void removeslotXolor() {
         for (Slot slot : allSlots) {
             if (slot.isReadyForShot()) {
                 slot.color = ClassificationColor.None;

@@ -25,17 +25,18 @@ public class TEST_With_Increment_power extends OpMode {
     // TODO: Verify cross-field shooting distance from center of target
     //  AprilTag to back of shooting wheel.
     final double CAMERA_TO_WHEEL_INCHES = 10.0; // inches between camera face and back of shooter wheel
-    final double TESTED_CAMERA_TO_TARGET_INCHES = 119.1; // inches between camera face and target
-    final double TESTED_SHOOTING_DISTANCE_FROM_WHEEL = (CAMERA_TO_WHEEL_INCHES + TESTED_CAMERA_TO_TARGET_INCHES);
+    final double TESTED_CAMERA_TO_TARGET_INCHES = 120.1; // inches between camera face and target
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
-    final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_SHOOTING_DISTANCE_FROM_WHEEL);
+    final double MAX_RPM = 5800;
+    final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
+    double currentRpm = 2500; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
     // GAME MATCH QUICK SETTINGS
-    final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
-    double SHOOTING_POWER_MIN = 0.25;
+    int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
 
     // DEFAULT SETTINGS
-    double currentShooterSpeed = .67; // SHOOTING_POWER_CROSS_FIELD;
+    boolean shooterWheelStarted = true; // set true if you want to start w/o shooting wheels on.
+    private boolean useCalculatedVelocity = false;
 
     @Override
     public void init() {
@@ -47,6 +48,37 @@ public class TEST_With_Increment_power extends OpMode {
 
     @Override
     public void loop() {
+        // Turn on shooter wheel at start of game.
+        if (!shooterWheelStarted) {
+            carousel.turnShooterOnOffByRpm(currentRpm);
+            shooterWheelStarted = true;
+        }
+
+        ////////////////////////////////////////////////////////
+        // TESTING NEXT/PREV LOGIC
+        ////////////////////////////////////////////////////////
+        if (gamepad2.rightBumperWasPressed()) {
+            carousel.nextRightIntakePosition();
+        } else if (gamepad2.leftBumperWasPressed()) {
+            carousel.nextLeftIntakePosition();
+        }
+
+        if (gamepad2.backWasReleased()){
+            carousel.turnShooterOnOffByRpm(currentRpm);
+        }
+
+        if (gamepad1.xWasReleased()) {
+            SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;
+        }
+        else if (gamepad1.bWasReleased()) {
+            SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
+        }
+        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
+            telemetry.addData("Target tag: ", "Blue");
+        }
+        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+            telemetry.addData("Target tag: ", "Red");
+        }
 
         aprilTagsWebCam.update();
         AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
@@ -62,12 +94,6 @@ public class TEST_With_Increment_power extends OpMode {
             aprilTagsWebCam.displayDetectionTelemetry(targetTag);
         }
 
-        List<AprilTagDetection> currentDetections = aprilTagsWebCam.getDetectedTags();
-
-        for (AprilTagDetection detection : currentDetections) {
-            aprilTagsWebCam.displayDetectionTelemetry(detection);
-        }
-
         //----------------------------
         // Drive Controls (Done)
         //----------------------------
@@ -77,24 +103,44 @@ public class TEST_With_Increment_power extends OpMode {
 
         driver.drive(forward, strafe, rotate);
 
-        if (gamepad2.backWasPressed()) {
-            carousel.turnShooterOnOff(currentShooterSpeed);
-        }
+        //-------------------
+        // Carousel Controls
+        //-------------------
 
+//        // Set shooter speed based on distance to target
+//        if (gamepad2.startWasReleased()) {
+//            if (useCalculatedVelocity) {
+//                useCalculatedVelocity = false;
+//            } else {
+//                useCalculatedVelocity = true;
+//            }
+//        }
+
+        telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
+
+//        if (useCalculatedVelocity) {
+//            currentRpm = calculateShooterRPM(distanceToTarget);
+//        } else {
+        // gamepad2.back: turns shooter on/off
+        // gamepad2.dpad_up/down: sets shooter speed
         if (gamepad2.dpadUpWasReleased()) {
-            currentShooterSpeed += 0.01;
+            currentRpm += 100;
         } else if (gamepad2.dpadDownWasReleased()) {
-            currentShooterSpeed -= 0.01;
+            currentRpm -= 100;
         }
+//        }
+//        telemetry.addData("Shooter currentRpm: " , currentRpm);
+        carousel.setShooterRPM(currentRpm);
 
-        //  make sure power stays between 0 and 1
-        currentShooterSpeed = Math.max(currentShooterSpeed, 0);
-        currentShooterSpeed  = Math.min(currentShooterSpeed, 1);
-
-        // Set shooter speed based on distance to target
-//        currentShooterSpeed = calculateShooterPower(distanceToTarget);
-        carousel.setShootingPower(currentShooterSpeed);
-
+        //----------------------------
+        // gamepad2.left_trigger: Shooting Mode.
+        // IF gamepad2 left trigger is pressed
+        //  - buttons X, B, A will go to shooter positions
+        //  - right trigger will set ball kicker to up
+        // ELSE
+        //  - buttons X, B, A will go to intake positions
+        //  - kicker will be set to down
+        //----------------------------
         if (gamepad2.left_trigger > 0) {
             if (gamepad2.b) {
                 carousel.gotoShootingB();
@@ -135,16 +181,8 @@ public class TEST_With_Increment_power extends OpMode {
         boolean robotIsStopped = isRobotStopped(forward, strafe, rotate);
 
         if (robotIsStopped) {
-            // use for resetting between matches
-            if (gamepad1.b) {
-                lifter.liftRight(gamepad1.right_trigger);
-                lifter.liftLeft(gamepad1.left_trigger);
-            } else if (gamepad1.x) {
-                lifter.liftRight(-gamepad1.right_trigger);
-                lifter.liftLeft(-gamepad1.left_trigger);
-            }
             // otherwise, do normal lift control
-            else if (gamepad1.right_trigger > 0) {
+            if (gamepad1.right_trigger > 0) {
                 if (gamepad1.a) {
                     lifter.liftDown(gamepad1.right_trigger / 2);
                 } else {
@@ -159,17 +197,18 @@ public class TEST_With_Increment_power extends OpMode {
         // Telemetry Update (DONE)
         //----------------------------
 
-//        lifter.displayLiftPositions();
+        lifter.displayLiftPositions();
         carousel.showCarouselData();
         telemetry.update();
     }
 
-    // TODO: complete calculation
-    public double calculateShooterVelocity(double inches) {
+    public double calculateShooterRPM(double inches) {
         if (inches < 16) {
-            return SHOOTING_POWER_MIN;
+            return currentRpm;
         }
-        return (inches + TESTED_CAMERA_TO_TARGET_INCHES) * RPM_NEEDED_PER_INCH;
+        double newRPM = (inches + TESTED_CAMERA_TO_TARGET_INCHES) * RPM_NEEDED_PER_INCH;
+
+        return Math.min(newRPM, MAX_RPM);
     }
 
     // ---------------------------------------------------------------------
