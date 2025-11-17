@@ -162,7 +162,7 @@ public class Decode2025_Auto_Red_StartCrossField_RPM extends Decode2025_Auto_Blu
     private void initialize() {
         // Initialize the Apriltag Detection process
         aprilTagsWebCam.initialize(hardwareMap, telemetry);
-        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
+//        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
 
         driver.initialize(hardwareMap);
         carousel.initialize(hardwareMap, telemetry);

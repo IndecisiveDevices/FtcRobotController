@@ -54,6 +54,8 @@ public class TEST_With_Increment_power extends OpMode {
             shooterWheelStarted = true;
         }
 
+        carousel.showCarouselData();
+
         ////////////////////////////////////////////////////////
         // TESTING NEXT/PREV LOGIC
         ////////////////////////////////////////////////////////
@@ -116,7 +118,7 @@ public class TEST_With_Increment_power extends OpMode {
 //            }
 //        }
 
-        telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
+        telemetry.addData("Calculate RPM: " , useCalculatedVelocity ? "✅" : "❌");
 
 //        if (useCalculatedVelocity) {
 //            currentRpm = calculateShooterRPM(distanceToTarget);
@@ -125,12 +127,12 @@ public class TEST_With_Increment_power extends OpMode {
         // gamepad2.dpad_up/down: sets shooter speed
         if (gamepad2.dpadUpWasReleased()) {
             currentRpm += 100;
+            carousel.setShooterRPM(currentRpm);
         } else if (gamepad2.dpadDownWasReleased()) {
             currentRpm -= 100;
+            carousel.setShooterRPM(currentRpm);
         }
 //        }
-//        telemetry.addData("Shooter currentRpm: " , currentRpm);
-        carousel.setShooterRPM(currentRpm);
 
         //----------------------------
         // gamepad2.left_trigger: Shooting Mode.
@@ -142,11 +144,11 @@ public class TEST_With_Increment_power extends OpMode {
         //  - kicker will be set to down
         //----------------------------
         if (gamepad2.left_trigger > 0) {
-            if (gamepad2.b) {
+            if (gamepad2.bWasPressed()) {
                 carousel.gotoShootingB();
-            } else if (gamepad2.x) {
+            } else if (gamepad2.xWasPressed()) {
                 carousel.gotoShootingX();
-            } else if (gamepad2.a) {
+            } else if (gamepad2.aWasPressed()) {
                 carousel.gotoShootingA();
             } else {
                 if (gamepad2.right_trigger > 0) {
@@ -159,16 +161,16 @@ public class TEST_With_Increment_power extends OpMode {
         else {
             carousel.kick(0.0);
 
-            if (gamepad2.b) {
+            if (gamepad2.bWasPressed()) {
                 carousel.gotoIntakeB();
-            } else if (gamepad2.x) {
+            } else if (gamepad2.xWasPressed()) {
                 carousel.gotoIntakeX();
-            } else if (gamepad2.a) {
+            } else if (gamepad2.aWasPressed()) {
                 carousel.gotoIntakeA();
             }
         }
 
-        if (gamepad2.y) {
+        if (gamepad2.yWasPressed()) {
             carousel.turnIntakeMotorOnOff();
         }
 
@@ -198,7 +200,6 @@ public class TEST_With_Increment_power extends OpMode {
         //----------------------------
 
         lifter.displayLiftPositions();
-        carousel.showCarouselData();
         telemetry.update();
     }
 

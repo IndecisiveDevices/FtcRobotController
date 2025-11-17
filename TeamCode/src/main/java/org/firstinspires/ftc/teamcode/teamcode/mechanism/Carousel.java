@@ -261,7 +261,7 @@ public class Carousel {
     public void setShooterRPM(double rpm) {
         rpm = Math.min(rpm, MAX_SHOOTER_RPM);
         double ticksPerSecond = (rpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
-        telemetry.addLine("ticketPerSecond" + ticksPerSecond);
+        //telemetry.addLine("ticketPerSecond" + ticksPerSecond);
         shooterMotor.setVelocity(shooterMotorIsOn ? ticksPerSecond : 0);
     }
 
@@ -270,8 +270,7 @@ public class Carousel {
     }
 
     public void showCarouselData() {
-        telemetry.addLine("Shooter velocity: " + shooterMotor.getVelocity());
-        telemetry.addLine("Shooter position: " + shooterMotor.getCurrentPosition());
+        telemetry.addLine("Shooter RPM: " + (int)getShooterRPM());
 
         for (Slot slot : allSlots) {
             if (slot == null ) {
@@ -291,9 +290,9 @@ public class Carousel {
         }
 
         // display if intake motor is on or off
-        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "ON" : "OFF"));
-        telemetry.addLine("Carousel Position: " + carousel.getPosition());
-        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
+        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "\uD83D\uDCA1" : "⚫"));
+//        telemetry.addLine("Carousel Position: " + carousel.getPosition());
+//        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
     }
 
     /*****************************************************************************************
