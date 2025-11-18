@@ -86,7 +86,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         waitForStart();
 
         // start the shooter wheel
-//        carousel.turnShooterOnOffByRpm(currentRpm); // BUSEY
+        carousel.turnShooterOnOffByRpm(currentRpm);
 
         // 1: move away from goal (done)
         // 2: turn face ob (edited done)
@@ -106,7 +106,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         moveRobot(0, 0, 0);
         sleep(3000);
 
-//        carousel.turnIntakeMotorOn(); // BUSEY
+        carousel.turnIntakeMotorOn();
         /// /////////////////////////////////////
         // SHOOTING GOAL
         /// ////////////////////////////////////
