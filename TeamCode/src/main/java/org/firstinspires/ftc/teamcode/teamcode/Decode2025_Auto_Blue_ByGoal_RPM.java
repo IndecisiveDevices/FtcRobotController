@@ -15,9 +15,9 @@ import java.util.List;
 // and paste it here. We have a webcam to use.
 @Autonomous(name = "Decode2025_Auto_Blue_ByGoal_RPM", group = "Auto Blue")
 public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
-    MecanumDrive driver = new MecanumDrive();
-    Carousel carousel = new Carousel();
-    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
+    protected MecanumDrive driver = new MecanumDrive();
+    protected Carousel carousel = new Carousel();
+    protected AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
 
     // Adjust these numbers to suit your robot.
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
@@ -36,16 +36,16 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     final double DESIRED_DISTANCE_TO_TARGET = 62.235;
 
     // April Tag IDs to look for on the Obelisk
-    final int GREEN_PURPLE_PURPLE_TAG_ID = 21;
-    final int PURPLE_GREEN_PURPLE_TAG_ID = 22;
-    final int PURPLE_PURPLE_GREEN_TAG_ID = 23;
+    final protected int GREEN_PURPLE_PURPLE_TAG_ID = 21;
+    final protected int PURPLE_GREEN_PURPLE_TAG_ID = 22;
+    final protected int PURPLE_PURPLE_GREEN_TAG_ID = 23;
 
     // April Tag IDs for Red and Blue goals/targets
-    final int RED_TAG_ID = 24;
-    final int BLUE_TAG_ID = 20;
+    final protected int RED_TAG_ID = 24;
+    final protected int BLUE_TAG_ID = 20;
 
     // GAME MATCH QUICK SETTINGS
-    final int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
+    protected int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
 
     // TODO: Verify cross-field shooting distance from center of target
     //  AprilTag to back of shooting wheel.
@@ -61,6 +61,20 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
 
+    protected void initialize() {
+        // Initialize the Apriltag Detection process
+//        aprilTagsWebCam.initialize(hardwareMap, telemetry);
+//        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
+
+        driver.initialize(hardwareMap);
+        carousel.initialize(hardwareMap, telemetry);
+
+        // Wait for driver to press start
+//        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch START to begin");
+        telemetry.update();
+    }
+
     @Override public void runOpMode()
     {
         boolean targetFound     = false;    // Set to true when an AprilTag target is detected
@@ -72,7 +86,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         waitForStart();
 
         // start the shooter wheel
-        carousel.turnShooterOnOffByRpm(currentRpm);
+//        carousel.turnShooterOnOffByRpm(currentRpm); // BUSEY
 
         // 1: move away from goal (done)
         // 2: turn face ob (edited done)
@@ -86,48 +100,30 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         /// /////////////////////////////////////
         // BACK AWAY FROM GOAL
         /// ////////////////////////////////////
-        moveRobot(-1, -0.01, 0);
-        sleep(1460);
+        moveRobot(-0.6, 0, 0);
+        sleep(1400);
+
         moveRobot(0, 0, 0);
+        sleep(3000);
 
-        moveRobot(0,0,0.50);
-        sleep(1067);
-        moveRobot(0,0,0);
-
-
-        /// /////////////////////////////////////
-        // GET CLASSIFICATION TAG ID
-        /// ////////////////////////////////////
-        // the classification tag ID so we know what order to shoot balls in.
-        sleep(500); // give some time to allow camera to catch up
-        classificationTagId = getClassificationTagId();
-
-        /// /////////////////////////////////////
-        // GET POSITIONED TOWARD THE GOAL
-        /// ////////////////////////////////////
-        // turn the robot toward the goal to shoot the balls.
-        moveRobot(0,0,-0.50);
-        sleep(1067);
-        moveRobot(0,0,0);
-
+//        carousel.turnIntakeMotorOn(); // BUSEY
         /// /////////////////////////////////////
         // SHOOTING GOAL
         /// ////////////////////////////////////
         shootAtTargetTag();
         carousel.setShootingPower(0);
+        carousel.turnIntakeMotorOff();
 
         /// /////////////////////////////////////
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
         // rotate a bit, toward the loading zone
-        moveRobot(0.0, 0, 0.2);
-        sleep(550);
+        moveRobot(0.0, 0.3, 0.0);
+        sleep(830);
 
         // then move backward to the loading zone
         moveRobot(0.4, 0, 0);
-        sleep(1300);
-
-        carousel.turnShooterOnOffByRpm(0);
+        sleep(780);
 
         // if we want to use april tags to move to or away from the robot
         // goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
@@ -150,8 +146,8 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     }
 
     public void shootAtTargetTag() {
-        aprilTagsWebCam.update();
-        shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+//        aprilTagsWebCam.update();
+//        shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
 //        if (shootingTargetTag != null && shootingTargetTag.ftcPose != null) {
 //            double newShooterPower = calculateShooterRPM(shootingTargetTag.ftcPose.range);
@@ -160,6 +156,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
 
         // Now that we set the classification tag id, we can shoot.
 
+        telemetry.addLine("Getting ready to shoot in 3 seconds");
         if (classificationTagId == GREEN_PURPLE_PURPLE_TAG_ID) {
             shootGreen();
             shootPurpleOne();
@@ -175,74 +172,52 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         }
     }
 
-    private void waitForShooterWheel() {
-        // create a while loop that checks the carousel.getShooterRpm()
-        // and if it hasn't reached currentRpm yet, sleep(200) until it does
-        // getShooterRPM returns values in increments of 85.7
-//        while (Math.abs(carousel.getShooterRPM() - currentRpm)  85.0) {
-//            sleep(200);
+//    private int getClassificationTagId() {
+//        if (classificationTagId > 0) {
+//            return classificationTagId;
 //        }
-    }
+//
+//        List<AprilTagDetection> allTags = aprilTagsWebCam.getDetectedTags();
+//        if (allTags != null) {
+//            for (AprilTagDetection tag : allTags) {
+//                if (tag.id == GREEN_PURPLE_PURPLE_TAG_ID) {
+//                    return GREEN_PURPLE_PURPLE_TAG_ID;
+//                } else if (tag.id == PURPLE_GREEN_PURPLE_TAG_ID) {
+//                    return PURPLE_GREEN_PURPLE_TAG_ID;
+//                } else if (tag.id == PURPLE_PURPLE_GREEN_TAG_ID) {
+//                    return PURPLE_PURPLE_GREEN_TAG_ID;
+//                }
+//            }
+//        }
+//        return classificationTagId;
+//    }
 
-    private void initialize() {
-        // Initialize the Apriltag Detection process
-        aprilTagsWebCam.initialize(hardwareMap, telemetry);
-        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
-
-        driver.initialize(hardwareMap);
-        carousel.initialize(hardwareMap, telemetry);
-
-        // Wait for driver to press start
-        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch START to begin");
-        telemetry.update();
-    }
-
-    private int getClassificationTagId() {
-        if (classificationTagId > 0) {
-            return classificationTagId;
-        }
-
-        List<AprilTagDetection> allTags = aprilTagsWebCam.getDetectedTags();
-        if (allTags != null) {
-            for (AprilTagDetection tag : allTags) {
-                if (tag.id == GREEN_PURPLE_PURPLE_TAG_ID) {
-                    return GREEN_PURPLE_PURPLE_TAG_ID;
-                } else if (tag.id == PURPLE_GREEN_PURPLE_TAG_ID) {
-                    return PURPLE_GREEN_PURPLE_TAG_ID;
-                } else if (tag.id == PURPLE_PURPLE_GREEN_TAG_ID) {
-                    return PURPLE_PURPLE_GREEN_TAG_ID;
-                }
-            }
-        }
-        return classificationTagId;
-    }
-
-    final int SLEEP_AFTER_POSITIONS = 1000;
-    final int SLEEP_AFTER_KICK = 800;
+    final int SLEEP_AFTER_POSITIONS = 1500;
+    final int SLEEP_AFTER_KICK = 1000;
+    final int SLEEP_AFTER_SHOOT = 1000;
 
     // Green Is A
     private void shootGreen() {
         carousel.gotoShootingA();
         sleep(SLEEP_AFTER_POSITIONS);
-        waitForShooterWheel();
         useKicker();
+        sleep(SLEEP_AFTER_SHOOT);
     }
 
     // Purple One is B
     private void shootPurpleOne() {
         carousel.gotoShootingB();
         sleep(SLEEP_AFTER_POSITIONS);
-        waitForShooterWheel();
         useKicker();
+        sleep(SLEEP_AFTER_SHOOT);
     }
 
     // Purple Two is X
     private void shootPurpleTwo() {
         carousel.gotoShootingX();
         sleep(SLEEP_AFTER_POSITIONS);
-        waitForShooterWheel();
         useKicker();
+        sleep(SLEEP_AFTER_SHOOT);
     }
 
     // Sets carousel.kick position to 1.0 for 1 second.
@@ -266,55 +241,55 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     // Use april tag to auto move the bot to target until you reach distanceToTagInches.
     // For example if you want the robot to go to the position 4ft in front of the target
     // use:  goToTargetTagDistance(48);
-    private void goToTargetTagDistance(double distanceToTagInches) {
-        double strafe;
-        double drive;
-        double turn;
-
-        // Will rotate until the SHOOTING_TARGET_TAG_ID is found.
-        // Once found, will drive to target until reaching DESIRED_DISTANCE_TO_TARGET
-        while (opModeIsActive())
-        {
-            aprilTagsWebCam.update();
-            shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
-            classificationTagId = getClassificationTagId();
-
-            // If we have found the desired target, Drive to target Automatically. Otherwise, we will rotate
-            if (shootingTargetTag != null ) {
-                telemetry.addData("\n>","Driving to Target\n");
-                telemetry.addData("Found", "ID %d (%s)", shootingTargetTag.id, shootingTargetTag.metadata.name);
-                telemetry.addData("Range",  "%5.1f inches", shootingTargetTag.ftcPose.range);
-                telemetry.addData("Bearing","%3.0f degrees", shootingTargetTag.ftcPose.bearing);
-                telemetry.addData("Yaw","%3.0f degrees", shootingTargetTag.ftcPose.yaw);
-
-                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-                double  rangeError      = (shootingTargetTag.ftcPose.range - distanceToTagInches);
-                double  headingError    = shootingTargetTag.ftcPose.bearing;
-                double  yawError        = shootingTargetTag.ftcPose.yaw;
-
-                // Use the speed and turn "gains" to calculate how we want the robot to move.
-                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
-                telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-
-                if (Math.abs(rangeError) < 1.2) {
-                    return; // we exit out of the method when we are at the target distance.
-                }
-            } else {
-                telemetry.addData("\n>","Locating Target\n");
-                drive = 0;
-                strafe = 0;
-                turn = MAX_AUTO_TURN;
-            }
-
-            telemetry.update();
-
-            // Apply desired axes motions to the drivetrain.
-            moveRobot(drive, -strafe, -turn);
-            sleep(10);
-        }
-    }
+//    private void goToTargetTagDistance(double distanceToTagInches) {
+//        double strafe;
+//        double drive;
+//        double turn;
+//
+//        // Will rotate until the SHOOTING_TARGET_TAG_ID is found.
+//        // Once found, will drive to target until reaching DESIRED_DISTANCE_TO_TARGET
+//        while (opModeIsActive())
+//        {
+//            aprilTagsWebCam.update();
+//            shootingTargetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+//            classificationTagId = getClassificationTagId();
+//
+//            // If we have found the desired target, Drive to target Automatically. Otherwise, we will rotate
+//            if (shootingTargetTag != null ) {
+//                telemetry.addData("\n>","Driving to Target\n");
+//                telemetry.addData("Found", "ID %d (%s)", shootingTargetTag.id, shootingTargetTag.metadata.name);
+//                telemetry.addData("Range",  "%5.1f inches", shootingTargetTag.ftcPose.range);
+//                telemetry.addData("Bearing","%3.0f degrees", shootingTargetTag.ftcPose.bearing);
+//                telemetry.addData("Yaw","%3.0f degrees", shootingTargetTag.ftcPose.yaw);
+//
+//                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+//                double  rangeError      = (shootingTargetTag.ftcPose.range - distanceToTagInches);
+//                double  headingError    = shootingTargetTag.ftcPose.bearing;
+//                double  yawError        = shootingTargetTag.ftcPose.yaw;
+//
+//                // Use the speed and turn "gains" to calculate how we want the robot to move.
+//                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+//                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+//                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+//
+//                telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+//
+//                if (Math.abs(rangeError) < 1.2) {
+//                    return; // we exit out of the method when we are at the target distance.
+//                }
+//            } else {
+//                telemetry.addData("\n>","Locating Target\n");
+//                drive = 0;
+//                strafe = 0;
+//                turn = MAX_AUTO_TURN;
+//            }
+//
+//            telemetry.update();
+//
+//            // Apply desired axes motions to the drivetrain.
+//            moveRobot(drive, -strafe, -turn);
+//            sleep(10);
+//        }
+//    }
 
 }

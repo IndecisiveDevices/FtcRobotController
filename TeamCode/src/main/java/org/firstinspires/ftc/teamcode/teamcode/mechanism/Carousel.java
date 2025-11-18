@@ -295,6 +295,14 @@ public class Carousel {
 //        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
     }
 
+    public void turnIntakeMotorOn() {
+        intakeMotor.setPower(1);
+    }
+
+    public void turnIntakeMotorOff() {
+        intakeMotor.setPower(0);
+    }
+
     /*****************************************************************************************
      * NEW CONCEPT: Enums (sounds like "ee-num")
      *

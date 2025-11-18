@@ -29,7 +29,11 @@ public class TEST_With_Increment_power extends OpMode {
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
-    double currentRpm = 2500; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
+
+    final static double CROSS_FIELD_SHOT_RPM = 3500;
+    final static double CLOSE_SHOT_RPM = 2500;
+
+    double currentRpm = CLOSE_SHOT_RPM; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
     // GAME MATCH QUICK SETTINGS
     int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
@@ -125,11 +129,12 @@ public class TEST_With_Increment_power extends OpMode {
 //        } else {
         // gamepad2.back: turns shooter on/off
         // gamepad2.dpad_up/down: sets shooter speed
+
         if (gamepad2.dpadUpWasReleased()) {
-            currentRpm += 100;
+            currentRpm = CROSS_FIELD_SHOT_RPM;
             carousel.setShooterRPM(currentRpm);
         } else if (gamepad2.dpadDownWasReleased()) {
-            currentRpm -= 100;
+            currentRpm = CLOSE_SHOT_RPM;
             carousel.setShooterRPM(currentRpm);
         }
 //        }
@@ -144,7 +149,14 @@ public class TEST_With_Increment_power extends OpMode {
         //  - kicker will be set to down
         //----------------------------
         if (gamepad2.left_trigger > 0) {
-            if (gamepad2.bWasPressed()) {
+
+            if (gamepad2.dpadUpWasReleased()) {
+                currentRpm += 100;
+                carousel.setShooterRPM(currentRpm);
+            } else if (gamepad2.dpadDownWasReleased()) {
+                currentRpm -= 100;
+                carousel.setShooterRPM(currentRpm);
+            } else if (gamepad2.bWasPressed()) {
                 carousel.gotoShootingB();
             } else if (gamepad2.xWasPressed()) {
                 carousel.gotoShootingX();

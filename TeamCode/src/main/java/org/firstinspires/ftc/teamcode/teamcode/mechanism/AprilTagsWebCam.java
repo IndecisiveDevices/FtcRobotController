@@ -68,7 +68,7 @@ public class AprilTagsWebCam {
             telemetry.addData("Camera", "Ready");
             telemetry.update();
         }
-        init_loop();
+        //init_loop();
     }
 
     public void init_loop() {

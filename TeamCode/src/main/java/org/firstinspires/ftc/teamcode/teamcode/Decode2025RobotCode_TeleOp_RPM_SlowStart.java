@@ -14,7 +14,7 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
-    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
+//    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
 
     // April Tag IDs for Red and Blue goals/targets
     final int RED_TAG_ID = 24;
@@ -27,7 +27,11 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
-    double currentRpm = 2500; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
+
+    final static double CROSS_FIELD_SHOT_RPM = 3500;
+    final static double CLOSE_SHOT_RPM = 2500;
+
+    double currentRpm = CLOSE_SHOT_RPM; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
     // GAME MATCH QUICK SETTINGS
     int SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID; // <<----- CHANGE THIS POTENTIALLY
@@ -41,7 +45,8 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         driver.initialize(hardwareMap);
         lifter.initialize(hardwareMap, telemetry);
         carousel.initialize(hardwareMap, telemetry);
-        aprilTagsWebCam.initialize(hardwareMap, telemetry);
+//        aprilTagsWebCam.initialize(hardwareMap, telemetry);
+//        aprilTagsWebCam.setManualExposure(6, 250, false);
     }
 
     @Override
@@ -69,19 +74,19 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
             telemetry.addData("Target tag: ", "Red");
         }
 
-        aprilTagsWebCam.update();
-        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+//        aprilTagsWebCam.update();
+//        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
-        double distanceToTarget = 0;
+//        double distanceToTarget = 0;
 
-        if (targetTag == null) {
-            telemetry.addData("No Tag Detected", "");
-        } else {
-            if (targetTag.ftcPose != null) {
-                distanceToTarget = targetTag.ftcPose.range;
-            }
-            aprilTagsWebCam.displayDetectionTelemetry(targetTag);
-        }
+//        if (targetTag == null) {
+//            telemetry.addData("No Tag Detected", "");
+//        } else {
+//            if (targetTag.ftcPose != null) {
+//                distanceToTarget = targetTag.ftcPose.range;
+//            }
+//            aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+//        }
 
         //----------------------------
         // Drive Controls (Done)
@@ -112,14 +117,18 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
 //        } else {
             // gamepad2.back: turns shooter on/off
             // gamepad2.dpad_up/down: sets shooter speed
+
             if (gamepad2.dpadUpWasReleased()) {
-                currentRpm += 100;
+                currentRpm = CROSS_FIELD_SHOT_RPM;
+                carousel.setShooterRPM(currentRpm);
             } else if (gamepad2.dpadDownWasReleased()) {
-                currentRpm -= 100;
+                currentRpm = CLOSE_SHOT_RPM;
+                carousel.setShooterRPM(currentRpm);
             }
+
 //        }
 //        telemetry.addData("Shooter currentRpm: " , currentRpm);
-        carousel.setShooterRPM(currentRpm);
+//        carousel.setShooterRPM(currentRpm);
 
         //----------------------------
         // gamepad2.left_trigger: Shooting Mode.
@@ -131,7 +140,19 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         //  - kicker will be set to down
         //----------------------------
         if (gamepad2.left_trigger > 0) {
-            if (gamepad2.bWasPressed()) {
+            if (gamepad2.dpadUpWasReleased()) {
+                currentRpm += 100;
+                carousel.setShooterRPM(currentRpm);
+            } else if (gamepad2.dpadDownWasReleased()) {
+                currentRpm -= 100;
+                carousel.setShooterRPM(currentRpm);
+            } else if (gamepad2.leftBumperWasPressed()) {
+                carousel.nextLeftShootingPosition();
+            }
+            else if (gamepad2.rightBumperWasPressed()) {
+                carousel.nextRightShootingPosition();
+            }
+            else if (gamepad2.bWasPressed()) {
                 carousel.gotoShootingB();
             } else if (gamepad2.xWasPressed()) {
                 carousel.gotoShootingX();
@@ -148,6 +169,16 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         else {
             carousel.kick(0.0);
 
+            // if left bumper, got to intake left position
+            if (gamepad2.leftBumperWasPressed()) {
+                carousel.nextLeftIntakePosition();
+            }
+            else if (gamepad2.rightBumperWasPressed()) {
+                carousel.nextRightIntakePosition();
+            }
+            ///  if right bumper, go to intake right position
+
+
             if (gamepad2.b) {
                 carousel.gotoIntakeB();
             } else if (gamepad2.x) {
@@ -158,7 +189,10 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         }
 
         if (gamepad2.y) {
-            carousel.turnIntakeMotorOnOff();
+            carousel.turnIntakeMotorOn();
+        }
+        else if (gamepad2.yWasReleased()) {
+            carousel.turnIntakeMotorOff();
         }
 
         //----------------------------
@@ -206,4 +240,9 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     private boolean isRobotStopped(double forward, double strafe, double rotate) {
         return (forward == 0 && strafe == 0 && rotate == 0);
     }
+
+//    @Override
+//    public void stop() {
+//        aprilTagsWebCam.stop();
+//    }
 }
