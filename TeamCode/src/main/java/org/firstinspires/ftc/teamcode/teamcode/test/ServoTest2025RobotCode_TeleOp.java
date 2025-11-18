@@ -1,9 +1,7 @@
-package org.firstinspires.ftc.teamcode.teamcode;
+package org.firstinspires.ftc.teamcode.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
@@ -12,7 +10,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 
-@TeleOp(name = "ServoTest2025RobotCode_TeleOp", group = "Robot")
+@TeleOp(name = "ServoTest2025RobotCode_TeleOp", group = "TEST")
 public class ServoTest2025RobotCode_TeleOp extends OpMode {
 
     NormalizedColorSensor colorSensor0;
