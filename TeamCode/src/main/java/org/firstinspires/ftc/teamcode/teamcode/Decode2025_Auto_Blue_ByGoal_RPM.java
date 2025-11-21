@@ -54,7 +54,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
-    double currentRpm = 2500; // RPM_OF_SHOT_WHEN_TESTED;
+    double currentRpm = 2800; // RPM_OF_SHOT_WHEN_TESTED;
 
     // DEFAULT SETTINGS
 
@@ -71,7 +71,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
 
         // Wait for driver to press start
 //        telemetry.addData("Camera preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch START to begin");
+        telemetry.addData(">", "Touch START to begin now");
         telemetry.update();
     }
 
@@ -84,7 +84,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
 
         initialize();
         waitForStart();
-
+        carousel.gotoShootingA();
         // start the shooter wheel
         carousel.turnShooterOnOffByRpm(currentRpm);
 
@@ -100,11 +100,21 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         /// /////////////////////////////////////
         // BACK AWAY FROM GOAL
         /// ////////////////////////////////////
-        moveRobot(-0.6, 0, 0);
-        sleep(1400);
+        double backMovePower = -0.6;
+        moveRobot(backMovePower, 0, 0.0);
+        sleep(1350);
+
+        int slowdownCounter = 200;
+        while (slowdownCounter > 0) {
+            backMovePower *= 0.75;
+            moveRobot(backMovePower, 0, 0);
+            sleep(20);
+            slowdownCounter -= 20;
+        }
+
 
         moveRobot(0, 0, 0);
-        sleep(3000);
+        sleep(2000);
 
         carousel.turnIntakeMotorOn();
         /// /////////////////////////////////////
@@ -118,11 +128,15 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         // GO BACK TO LOADING ZONE OR NEARBY
         /// ////////////////////////////////////
         // rotate a bit, toward the loading zone
-        moveRobot(0.0, 0.3, 0.0);
-        sleep(830);
+        moveRobot(0.0, -0.3, 0.0);
+        sleep(1000);
 
         // then move backward to the loading zone
-        moveRobot(0.4, 0, 0);
+        moveRobot(0.4, 0, -0.3);
+        sleep(500);
+
+        // then move backward to the loading zone
+        moveRobot(0.2, 0, 0);
         sleep(780);
 
         // if we want to use april tags to move to or away from the robot
@@ -168,6 +182,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         } else { // is either PURPLE_PURPLE_GREEN_TAG_ID or the default if classificationId not found
             shootPurpleOne();
             shootPurpleTwo();
+            carousel.setShooterRPM(currentRpm);
             shootGreen();
         }
     }
@@ -192,14 +207,15 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
 //        return classificationTagId;
 //    }
 
-    final int SLEEP_AFTER_POSITIONS = 1500;
-    final int SLEEP_AFTER_KICK = 1000;
-    final int SLEEP_AFTER_SHOOT = 1000;
+    final int SLEEP_AFTER_POSITIONS = 2000; // 1500;
+    final int SLEEP_AFTER_KICK = 1000; // 1200;
+    final int SLEEP_AFTER_SHOOT = 1000; // 1200;
 
     // Green Is A
     private void shootGreen() {
         carousel.gotoShootingA();
         sleep(SLEEP_AFTER_POSITIONS);
+        telemetry.addLine(" RPM:" + carousel.getShooterRPM());
         useKicker();
         sleep(SLEEP_AFTER_SHOOT);
     }
@@ -208,7 +224,9 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     private void shootPurpleOne() {
         carousel.gotoShootingB();
         sleep(SLEEP_AFTER_POSITIONS);
+        telemetry.addLine(" RPM:" + carousel.getShooterRPM());
         useKicker();
+        carousel.setShooterRPM(currentRpm - 100); // TEMP
         sleep(SLEEP_AFTER_SHOOT);
     }
 
@@ -216,6 +234,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     private void shootPurpleTwo() {
         carousel.gotoShootingX();
         sleep(SLEEP_AFTER_POSITIONS);
+        telemetry.addLine(" RPM:" + carousel.getShooterRPM());
         useKicker();
         sleep(SLEEP_AFTER_SHOOT);
     }

@@ -189,7 +189,7 @@ public class Decode2025RobotCode_TeleOp_RPM extends OpMode {
         //----------------------------
 
         lifter.displayLiftPositions();
-        carousel.showCarouselData();
+        carousel.showCarouselData(false);
         telemetry.update();
     }
 

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teamcode;
 
+import static android.os.SystemClock.sleep;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -29,7 +31,7 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
 
     final static double CROSS_FIELD_SHOT_RPM = 3500;
-    final static double CLOSE_SHOT_RPM = 2500;
+    final static double CLOSE_SHOT_RPM = 2700;
 
     double currentRpm = CLOSE_SHOT_RPM; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
@@ -67,12 +69,13 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         else if (gamepad1.bWasReleased()) {
             SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
         }
-        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
-            telemetry.addData("Target tag: ", "Blue");
-        }
-        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
-            telemetry.addData("Target tag: ", "Red");
-        }
+//        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
+//            telemetry.addData("Target tag: ", "\uD83D\uDFE6");
+//        }
+//        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+//            telemetry.addData("Target tag: ", "\uD83D\uDFE5");
+//        }
+
 
 //        aprilTagsWebCam.update();
 //        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
@@ -118,13 +121,6 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
             // gamepad2.back: turns shooter on/off
             // gamepad2.dpad_up/down: sets shooter speed
 
-            if (gamepad2.dpadUpWasReleased()) {
-                currentRpm = CROSS_FIELD_SHOT_RPM;
-                carousel.setShooterRPM(currentRpm);
-            } else if (gamepad2.dpadDownWasReleased()) {
-                currentRpm = CLOSE_SHOT_RPM;
-                carousel.setShooterRPM(currentRpm);
-            }
 
 //        }
 //        telemetry.addData("Shooter currentRpm: " , currentRpm);
@@ -140,6 +136,8 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         //  - kicker will be set to down
         //----------------------------
         if (gamepad2.left_trigger > 0) {
+            carousel.showCarouselData(true);
+
             if (gamepad2.dpadUpWasReleased()) {
                 currentRpm += 100;
                 carousel.setShooterRPM(currentRpm);
@@ -158,16 +156,29 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
                 carousel.gotoShootingX();
             } else if (gamepad2.aWasPressed()) {
                 carousel.gotoShootingA();
-            } else {
-                if (gamepad2.right_trigger > 0) {
-                    carousel.kick(1.0);
-                } else {
-                    carousel.kick(0.0);
-                }
             }
+
+            if (gamepad2.right_trigger > 0) {
+                carousel.kick(1.0);
+                sleep(500);
+                carousel.kick(0.0);
+                sleep(500);
+            }
+
         }
         else {
-            carousel.kick(0.0);
+
+            if (gamepad2.dpadUpWasReleased()) {
+                currentRpm = CROSS_FIELD_SHOT_RPM;
+                carousel.setShooterRPM(currentRpm);
+                carousel.setLongRangePidC();
+            } else if (gamepad2.dpadDownWasReleased()) {
+                currentRpm = CLOSE_SHOT_RPM;
+                carousel.setShooterRPM(currentRpm);
+                carousel.setShortRangePidC();
+            }
+
+            carousel.showCarouselData(false);
 
             // if left bumper, got to intake left position
             if (gamepad2.leftBumperWasPressed()) {
@@ -176,14 +187,11 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
             else if (gamepad2.rightBumperWasPressed()) {
                 carousel.nextRightIntakePosition();
             }
-            ///  if right bumper, go to intake right position
-
-
-            if (gamepad2.b) {
+            else if (gamepad2.bWasPressed()) {
                 carousel.gotoIntakeB();
-            } else if (gamepad2.x) {
+            } else if (gamepad2.xWasPressed()) {
                 carousel.gotoIntakeX();
-            } else if (gamepad2.a) {
+            } else if (gamepad2.aWasPressed()) {
                 carousel.gotoIntakeA();
             }
         }
@@ -221,7 +229,6 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         //----------------------------
 
         lifter.displayLiftPositions();
-        carousel.showCarouselData();
         telemetry.update();
     }
 

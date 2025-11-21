@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends Decode2025_Auto_Blue_ByGoal_RPM {
     public Decode2025_Auto_Blue_StartAtCrossField_RPM() {
         SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;
-        currentRpm = 4000;
+        currentRpm = 3300;
     }
 
     @Override public void runOpMode()
@@ -29,8 +29,8 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends Decode2025_Auto_
         /// /////////////////////////////////////
         // FACE TARGET
         /// ////////////////////////////////////
-        moveRobot(0,0,-0.4);
-        sleep(800);
+//        moveRobot(0,0,-0.4);
+//        sleep(800);
         moveRobot(0, 0, 0);
 
         sleep(3500);
@@ -46,9 +46,11 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends Decode2025_Auto_
         /// /////////////////////////////////////
         // Move away from launch line
         /// ////////////////////////////////////
-        // slide right
-        moveRobot(0.9, 0, 0);
-        sleep((int)(1300 * 0.4));
+        moveRobot(0.5, 0, 0);
+        sleep(1000);
+
+        moveRobot(0.0, 0.0, -0.3);
+        sleep(500);
 
         moveRobot(0,0,0);
 

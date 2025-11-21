@@ -52,13 +52,15 @@ public class TEST_With_Increment_power extends OpMode {
 
     @Override
     public void loop() {
+        //carousel.saveSlotColor();
+
         // Turn on shooter wheel at start of game.
         if (!shooterWheelStarted) {
             carousel.turnShooterOnOffByRpm(currentRpm);
             shooterWheelStarted = true;
         }
 
-        carousel.showCarouselData();
+        carousel.showCarouselData(false);
 
         ////////////////////////////////////////////////////////
         // TESTING NEXT/PREV LOGIC

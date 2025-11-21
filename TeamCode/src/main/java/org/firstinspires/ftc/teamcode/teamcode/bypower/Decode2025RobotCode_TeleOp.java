@@ -167,7 +167,7 @@ public class Decode2025RobotCode_TeleOp extends OpMode {
         //----------------------------
 
         lifter.displayLiftPositions();
-        carousel.showCarouselData();
+        carousel.showCarouselData(false);
         telemetry.update();
     }
 
