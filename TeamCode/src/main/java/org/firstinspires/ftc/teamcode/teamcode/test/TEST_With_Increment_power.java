@@ -54,6 +54,11 @@ public class TEST_With_Increment_power extends OpMode {
     public void loop() {
         //carousel.saveSlotColor();
 
+        telemetry.addLine(" Right stick x-axis: " +  gamepad1.right_stick_x);
+        telemetry.addLine(" Right stick y-axis: " +  gamepad1.right_stick_y);
+        telemetry.addLine(" Left stick x-axis: " +  gamepad1.left_stick_x);
+        telemetry.addLine(" Left stick y-axis: " +  gamepad1.left_stick_y);
+
         // Turn on shooter wheel at start of game.
         if (!shooterWheelStarted) {
             carousel.turnShooterOnOffByRpm(currentRpm);

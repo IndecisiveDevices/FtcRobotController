@@ -69,27 +69,6 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         else if (gamepad1.bWasReleased()) {
             SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
         }
-//        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
-//            telemetry.addData("Target tag: ", "\uD83D\uDFE6");
-//        }
-//        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
-//            telemetry.addData("Target tag: ", "\uD83D\uDFE5");
-//        }
-
-
-//        aprilTagsWebCam.update();
-//        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
-
-//        double distanceToTarget = 0;
-
-//        if (targetTag == null) {
-//            telemetry.addData("No Tag Detected", "");
-//        } else {
-//            if (targetTag.ftcPose != null) {
-//                distanceToTarget = targetTag.ftcPose.range;
-//            }
-//            aprilTagsWebCam.displayDetectionTelemetry(targetTag);
-//        }
 
         //----------------------------
         // Drive Controls (Done)
@@ -98,33 +77,20 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         double strafe = gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
 
+        if (gamepad1.left_trigger > 0) {
+            forward = forward/2;
+            strafe = strafe/2;
+            rotate = rotate/2;
+        }
+
         driver.drive(forward, strafe, rotate);
 
         //-------------------
         // Carousel Controls
         //-------------------
 
-//        // Set shooter speed based on distance to target
-//        if (gamepad2.startWasReleased()) {
-//            if (useCalculatedVelocity) {
-//                useCalculatedVelocity = false;
-//            } else {
-//                useCalculatedVelocity = true;
-//            }
-//        }
-
         telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
 
-//        if (useCalculatedVelocity) {
-//            currentRpm = calculateShooterRPM(distanceToTarget);
-//        } else {
-            // gamepad2.back: turns shooter on/off
-            // gamepad2.dpad_up/down: sets shooter speed
-
-
-//        }
-//        telemetry.addData("Shooter currentRpm: " , currentRpm);
-//        carousel.setShooterRPM(currentRpm);
 
         //----------------------------
         // gamepad2.left_trigger: Shooting Mode.

@@ -1,13 +1,14 @@
-package org.firstinspires.ftc.teamcode.teamcode;
+package org.firstinspires.ftc.teamcode.teamcode.test;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
-// Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
-// and paste it here. We have a webcam to use.
-@Autonomous(name = "Auto_Blue_CF", group = "Auto Blue")
-public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends Decode2025_Auto_Blue_ByGoal_RPM {
-    public Decode2025_Auto_Blue_StartAtCrossField_RPM() {
-        SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;
+import org.firstinspires.ftc.teamcode.teamcode.Decode2025_Auto_Blue_ByGoal_RPM;
+
+@Autonomous(name = "Auto_Red_CF", group = "Auto Red")
+public class Auto_Red_CF_V2 extends Decode2025_Auto_Blue_ByGoal_RPM {
+    public Auto_Red_CF_V2() {
+        SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
         currentRpm = 3300;
     }
 
@@ -16,7 +17,7 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends Decode2025_Auto_
         initialize();
         waitForStart();
         // start the shooter wheel
-        carousel.turnShooterOnOffByRpm(currentRpm + 100);
+        carousel.turnShooterOnOffByRpm(currentRpm + 200);
         carousel.gotoShootingA();
 
         moveRobot(0, 0, 0);
@@ -43,3 +44,4 @@ public class Decode2025_Auto_Blue_StartAtCrossField_RPM extends Decode2025_Auto_
         carousel.turnShooterOnOffByRpm(0);
     }
 }
+
