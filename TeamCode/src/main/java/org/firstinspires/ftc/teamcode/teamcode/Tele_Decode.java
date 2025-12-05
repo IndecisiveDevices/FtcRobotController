@@ -4,6 +4,8 @@ import static android.os.SystemClock.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.AprilTagsWebCam;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.Carousel;
@@ -11,12 +13,12 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-@TeleOp(name = "Decode2025RobotCode_TeleOp_RPM_SlowStart", group = "Decode")
-public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
+@TeleOp(name = "Tele_Decode", group = "Decode")
+public class Tele_Decode extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();
     Carousel carousel = new Carousel();
-//    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
+    AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
 
     // April Tag IDs for Red and Blue goals/targets
     final int RED_TAG_ID = 24;
@@ -30,8 +32,8 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
 
-    final static double CROSS_FIELD_SHOT_RPM = 3500;
-    final static double CLOSE_SHOT_RPM = 2700;
+    final static double CROSS_FIELD_SHOT_RPM = 3900;
+    final static double CLOSE_SHOT_RPM = 3450;
 
     double currentRpm = CLOSE_SHOT_RPM; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
@@ -47,8 +49,8 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         driver.initialize(hardwareMap);
         lifter.initialize(hardwareMap, telemetry);
         carousel.initialize(hardwareMap, telemetry);
-//        aprilTagsWebCam.initialize(hardwareMap, telemetry);
-//        aprilTagsWebCam.setManualExposure(6, 250, false);
+        aprilTagsWebCam.initialize(hardwareMap, telemetry);
+//        aprilTagsWebCam.autoSetExposure(3000);
     }
 
     @Override
@@ -68,6 +70,26 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         }
         else if (gamepad1.bWasReleased()) {
             SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
+        }
+        if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
+            telemetry.addData("Target tag: ", "Blue");
+        }
+        else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+            telemetry.addData("Target tag: ", "Red");
+        }
+
+        aprilTagsWebCam.update();
+        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+        double distanceToTarget = 0;
+
+        if (targetTag == null) {
+            telemetry.addData("No Tag Detected", "");
+        } else {
+            if (targetTag.ftcPose != null) {
+                distanceToTarget = targetTag.ftcPose.range;
+            }
+            aprilTagsWebCam.displayDetectionTelemetry(targetTag);
         }
 
         //----------------------------
@@ -122,26 +144,26 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
                 carousel.gotoShootingX();
             } else if (gamepad2.aWasPressed()) {
                 carousel.gotoShootingA();
-            }
-
-            if (gamepad2.right_trigger > 0) {
-                carousel.kick(1.0);
-                sleep(500);
-                carousel.kick(0.0);
-                sleep(500);
+            } else {
+                if (gamepad2.right_trigger > 0) {
+                    if (carousel.targetRpmReached()) {
+                        carousel.kick(1.0);
+                    }
+                } else {
+                    carousel.kick(0.0);
+                }
             }
 
         }
         else {
+            carousel.kick(0.0);
 
             if (gamepad2.dpadUpWasReleased()) {
                 currentRpm = CROSS_FIELD_SHOT_RPM;
                 carousel.setShooterRPM(currentRpm);
-                carousel.setLongRangePidC();
             } else if (gamepad2.dpadDownWasReleased()) {
                 currentRpm = CLOSE_SHOT_RPM;
                 carousel.setShooterRPM(currentRpm);
-                carousel.setShortRangePidC();
             }
 
             carousel.showCarouselData(false);
@@ -214,8 +236,120 @@ public class Decode2025RobotCode_TeleOp_RPM_SlowStart extends OpMode {
         return (forward == 0 && strafe == 0 && rotate == 0);
     }
 
-//    @Override
-//    public void stop() {
-//        aprilTagsWebCam.stop();
-//    }
+
+    // Adjust these numbers to suit your robot.
+    //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
+    //  applied to the drive motors to correct the error.
+    //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
+    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+    final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
+    final double TURN_GAIN   =  0.02  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
+    final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 1;   //  Clip the turn speed to this max value (adjust for your robot)
+
+    double distanceToTarget = 0;
+
+    private void goToTarget(double desiredDistance) {
+        boolean targetFound = false;
+
+        double drive;
+        double turn;
+        double strafe;
+
+//        aprilTagsWebCam.update();
+        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+        if (targetTag == null) {
+            telemetry.addData("Tag NOt Detected", SHOOTING_TARGET_TAG_ID);
+        } else {
+            if (targetTag.ftcPose != null) {
+                distanceToTarget = targetTag.ftcPose.range;
+                targetFound = true;
+                aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+            }
+        }
+
+        // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
+        if (targetFound) {
+
+            // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+            double  rangeError      = (targetTag.ftcPose.range - desiredDistance);
+            double  headingError    = targetTag.ftcPose.bearing;
+            double  yawError        = targetTag.ftcPose.yaw;
+
+            // Use the speed and turn "gains" to calculate how we want the robot to move.
+            drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+            turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+            strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+            // rangeError is less than .8", stop and exit method
+            if (Math.abs(rangeError) < 0.8) {
+                driver.drive(0,0,0);
+                return;
+            }
+
+            telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+        }
+        else {
+            // rotate until we see the tag
+            turn   = -0.0;
+            drive  = -0.05;
+            strafe = 0;
+            telemetry.addLine("Looking for tag ...");
+        }
+        telemetry.update();
+
+        // Apply desired axes motions to the drivetrain.
+        driver.drive(drive, -strafe, -turn);
+    }
+
+    /**
+     * Rotates the robot to center on the specified AprilTag without driving forward or backward.
+     * The robot will turn until the tag is directly in front of it (headingError is minimal).
+     */
+    double centerOffSet = 0;
+    private double centerOnTarget() {
+        // First, get the most recent tag data
+//        aprilTagsWebCam.update();
+        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+        // If the tag isn't found, we can't do anything.
+        if (targetTag == null || targetTag.ftcPose == null) {
+            telemetry.addLine("Cannot center: Tag not visible.");
+            // Stop any previous movement
+            driver.drive(0, 0, 0);
+            return 0; // Exit the method
+        }
+
+        // The 'bearing' or 'headingError' is the angle we need to correct.
+        // A positive value means the tag is to our right, so we need to turn right.
+        // A negative value means the tag is to our left, so we need to turn left.
+        double headingError = targetTag.ftcPose.bearing - centerOffSet; // blue
+
+        // Stop turning if we are centered (e.g., within 2 degrees).
+        // This prevents the robot from jittering back and forth.
+        final double HEADING_TOLERANCE = 0.5; // degrees
+        if (Math.abs(headingError) <= HEADING_TOLERANCE) {
+            telemetry.addLine("Centered on Target!");
+            driver.drive(0, 0, 0); // Stop turning
+            return 0; // We are centered, so we're done.
+        }
+
+        telemetry.addData("Centering...", "Heading Error: %.2f", headingError);
+        aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+
+        // Calculate the turning power. The 'TURN_GAIN' slows down the rotation
+        // as the robot gets closer to being centered, providing smoother control.
+        double turnPower = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN);
+
+        return -turnPower;
+//        // Apply only the turning motion. Drive and strafe are set to 0.
+//        // Note: The 'turn' from the original method corresponds to a negative 'turnPower'
+//        // if you want to maintain the same rotational direction.
+//        driver.drive(0, 0, -turnPower);
+
+    }
+
 }

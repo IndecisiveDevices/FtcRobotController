@@ -272,12 +272,11 @@ public class Carousel {
         return revolutionsPerMinute;
     }
 
+    double targetRpm = 0;
     public void setShooterRPM(double rpm) {
-        rpm = Math.min(rpm, MAX_SHOOTER_RPM);
-        double ticksPerSecond = (rpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
-        //telemetry.addLine("ticketPerSecond" + ticksPerSecond);
+        targetRpm = Math.min(rpm, MAX_SHOOTER_RPM);
+        double ticksPerSecond = (targetRpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
         shooterMotor.setVelocity(shooterMotorIsOn ? ticksPerSecond : 0);
-//        shooterMotor.setVelocity( ticksPerSecond );
     }
 
     public void kick(double power) {
@@ -287,7 +286,19 @@ public class Carousel {
         }
     }
 
+    // function to determine if the incoming RPM is within the acceptable range
+    // to fire the shooter. Acceptable range is within 65 RPM of the currentRpm value.
+    // takes arguments "currentRpm" and "measuredRpm"
+    public boolean targetRpmReached() {
+        final double ACCEPTABLE_RANGE = 75.0;
+        if (targetRpm < 100) {
+            return false;
+        }
+        return Math.abs(targetRpm - getShooterRPM()) <= ACCEPTABLE_RANGE;
+    }
+
     public void showCarouselData(boolean isShooting) {
+        telemetry.addLine("Ready to Fire: " + (targetRpmReached() ? "✅" : "❌"));
         telemetry.addLine(
                 "Intake Motor: " + (intakeMotorIsOn ? "\uD83D\uDCA1" : "⚫") +
                         "   |    " +
@@ -329,13 +340,6 @@ public class Carousel {
 
     public void turnIntakeMotorOff() {
         intakeMotor.setPower(0);
-    }
-
-    public void setLongRangePidC() {
-
-    }
-
-    public void setShortRangePidC() {
     }
 
     /*****************************************************************************************

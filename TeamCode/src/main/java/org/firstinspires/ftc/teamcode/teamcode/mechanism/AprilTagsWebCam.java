@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.teamcode.mechanism;
 
+import static android.os.SystemClock.sleep;
+
 import android.util.Size;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -33,6 +32,19 @@ public class AprilTagsWebCam {
 
     private ExposureControl exposureControl;
     private GainControl gainControl;
+
+    private static int RED_TAG_ID = 24;
+    private static int BLUE_TAG_ID = 20;
+    private static int PPG_TAG_ID = 23;
+
+    private static int KNOWN_APRILTAG_ID_1 = RED_TAG_ID;
+    private static final int KNOWN_APRILTAG_ID_2 = BLUE_TAG_ID;
+
+    private static final long MIN_EXPOSURE_MS = 5;
+    private static final long INITIAL_EXPOSURE_MS = 20;
+    private static final long EXPOSURE_STEP_MS = 2;
+    private static final int MAX_GAIN = 255;
+    private static final int GAIN_STEP = 10;
 
     public void initialize(HardwareMap hwMap, Telemetry telemetry) {
         this.telemetry = telemetry;
@@ -71,13 +83,112 @@ public class AprilTagsWebCam {
         //init_loop();
     }
 
-    public void init_loop() {
+    public void update() {
+        detectedTags = aprilTagProcessor.getDetections();
+        if (detectedTags == null || detectedTags.isEmpty()) {
+            refreshDetections();
+        }
+    }
+
+    public List<AprilTagDetection> getDetectedTags() {
+        return detectedTags;
+    }
+
+    public List<AprilTagDetection> getFreshDetections() {
+        return aprilTagProcessor.getFreshDetections();
+    }
+
+    public void refreshDetections() {
+        List<AprilTagDetection> tags = aprilTagProcessor.getDetections();
+        if (tags == null) {
+            // set detectedTags to empty list
+            detectedTags = new ArrayList<>();
+        } else {
+            detectedTags = tags;
+        }
+    }
+
+
+    public void displayDetectionTelemetry(AprilTagDetection detection) {
+        if (detection == null) {
+            return;
+        }
+
+        if (detection.metadata != null) {
+            telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+            telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+            telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+            telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+        } else {
+            telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+            telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+        }
+    }
+
+    public AprilTagDetection getTagBySpecificId(int id) {
+        for (AprilTagDetection tag : getDetectedTags()) {
+            telemetry.addData("tag.id: ", tag.id);
+            if (tag.id == id) {
+                return tag;
+            }
+        }
+        return null;
+    }
+
+    public void stop() {
+        if (visionPortal != null) {
+            visionPortal.close();
+        }
+    }
+
+    /*
+     Manually set the camera gain and exposure.
+     This can only be called AFTER calling initAprilTag(), and only works for Webcams;
+    */
+    public void setManualExposure(int exposureMS, int gain) {
+        // Wait for the camera to be open, then use the controls
+
+        if (visionPortal == null) {
+            return;
+        }
+
+        // Make sure camera is streaming before we try to set the exposure controls
+        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+            telemetry.addData("Camera", "Waiting");
+            telemetry.update();
+            while ((visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
+                sleep(20);
+            }
+            telemetry.addData("Camera", "Ready");
+            telemetry.update();
+        }
+
+        // Set camera controls
+        if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
+            exposureControl.setMode(ExposureControl.Mode.Manual);
+            sleep(50);
+        }
+        exposureControl.setExposure(exposureMS, TimeUnit.MILLISECONDS);
+        sleep(20);
+        gainControl.setGain(gain);
+        sleep(20);
+    }
+
+    public void autoSetExposure(int timeoutMs) {
         boolean tagsFound = false;
         long currentExposure = exposureControl.getExposure(TimeUnit.MILLISECONDS);
         int currentGain = gainControl.getGain();
 
+        ElapsedTime timer = new ElapsedTime();
+
         // Loop to adjust until tag is found
         while (!tagsFound) {
+            // set a default exposure if we
+            if (timer.milliseconds() > timeoutMs) {
+                setManualExposure(6, 250);
+                return;
+            }
+
             List<AprilTagDetection> currentDetections = aprilTagProcessor.getDetections();
 
             if (!currentDetections.isEmpty()) {
@@ -114,101 +225,5 @@ public class AprilTagsWebCam {
         }
     }
 
-    public void update() {
-        detectedTags = aprilTagProcessor.getDetections();
-    }
-
-    public List<AprilTagDetection> getDetectedTags() {
-        return detectedTags;
-    }
-
-    public void displayDetectionTelemetry(AprilTagDetection detection) {
-        if (detection == null) {
-            return;
-        }
-
-        if (detection.metadata != null) {
-            telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
-            telemetry.addLine(String.format("XYZ %6.1f %6.1f %6.1f  (inch)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-            telemetry.addLine(String.format("PRY %6.1f %6.1f %6.1f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-            telemetry.addLine(String.format("RBE %6.1f %6.1f %6.1f  (inch, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-        } else {
-            telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-            telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-        }
-    }
-
-    public AprilTagDetection getTagBySpecificId(int id) {
-        for (AprilTagDetection tag : detectedTags) {
-            telemetry.addData("tag.id: ", tag.id);
-            if (tag.id == id) {
-                return tag;
-            }
-        }
-        return null;
-    }
-
-    public void stop() {
-        if (visionPortal != null) {
-            visionPortal.close();
-        }
-    }
-
-    /*
-     Manually set the camera gain and exposure.
-     This can only be called AFTER calling initAprilTag(), and only works for Webcams;
-    */
-    public void setManualExposure(int exposureMS, int gain, boolean isStopRequested) {
-        // Wait for the camera to be open, then use the controls
-
-        if (visionPortal == null) {
-            return;
-        }
-
-        // Make sure camera is streaming before we try to set the exposure controls
-        if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
-            telemetry.addData("Camera", "Waiting");
-            telemetry.update();
-            while (!isStopRequested && (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)) {
-                sleep(20);
-            }
-            telemetry.addData("Camera", "Ready");
-            telemetry.update();
-        }
-
-        // Set camera controls unless we are stopping.
-        if (!isStopRequested) {
-            if (exposureControl.getMode() != ExposureControl.Mode.Manual) {
-                exposureControl.setMode(ExposureControl.Mode.Manual);
-                sleep(50);
-            }
-            exposureControl.setExposure((long) exposureMS, TimeUnit.MILLISECONDS);
-            sleep(20);
-            gainControl.setGain(gain);
-            sleep(20);
-        }
-    }
-
-    private void sleep(long ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    }
-
-
-    private static int RED_TAG_ID = 24;
-    private static int BLUE_TAG_ID = 20;
-    private static int PPG_TAG_ID = 23;
-
-    private static int KNOWN_APRILTAG_ID_1 = RED_TAG_ID;
-    private static final int KNOWN_APRILTAG_ID_2 = BLUE_TAG_ID;
-
-    private static final long MIN_EXPOSURE_MS = 5;
-    private static final long INITIAL_EXPOSURE_MS = 20;
-    private static final long EXPOSURE_STEP_MS = 2;
-    private static final int MAX_GAIN = 255;
-    private static final int GAIN_STEP = 10;
 
 }

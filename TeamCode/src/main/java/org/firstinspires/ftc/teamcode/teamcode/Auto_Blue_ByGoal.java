@@ -7,14 +7,16 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.AprilTagsWebCam;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.Carousel;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
+import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
 @Autonomous(name = "Auto_Blue_ByGoal", group = "Auto Blue")
-public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
+public class Auto_Blue_ByGoal extends LinearOpMode {
     protected MecanumDrive driver = new MecanumDrive();
     protected Carousel carousel = new Carousel();
     protected AprilTagsWebCam aprilTagsWebCam = new AprilTagsWebCam();
@@ -33,7 +35,7 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
 
     // If using auto "drive to target", change this distance in front of the target you want the bot
     // to drive to in inches. example: goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
-    final double DESIRED_DISTANCE_TO_TARGET = 62.235;
+    final double DESIRED_DISTANCE_TO_TARGET = 45.5;
 
     // April Tag IDs to look for on the Obelisk
     final protected int GREEN_PURPLE_PURPLE_TAG_ID = 21;
@@ -54,17 +56,18 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     final double RPM_OF_SHOT_WHEN_TESTED = 5057.14; // <<----- CHANGE THIS POTENTIALLY
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
-    public double currentRpm = 3000; // RPM_OF_SHOT_WHEN_TESTED;
+    public double currentRpm = 2700; // RPM_OF_SHOT_WHEN_TESTED;
 
     // DEFAULT SETTINGS
-
+    private VisionPortal visionPortal;               // Used to manage the video source.
+    private AprilTagProcessor aprilTag;              // Used for managing the AprilTag detection process.
     int classificationTagId = 0; // This will be set when detected by webcam
     AprilTagDetection shootingTargetTag = null;     // Used to hold the data for a detected AprilTag
 
     protected void initialize() {
         // Initialize the Apriltag Detection process
-//        aprilTagsWebCam.initialize(hardwareMap, telemetry);
-//        aprilTagsWebCam.setManualExposure(6, 250, isStopRequested());
+        aprilTagsWebCam.initialize(hardwareMap, telemetry);
+        aprilTagsWebCam.setManualExposure(6, 250);
 
         driver.initialize(hardwareMap);
         carousel.initialize(hardwareMap, telemetry);
@@ -81,14 +84,14 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         waitForStart();
         carousel.gotoShootingA();
         // start the shooter wheel
-        carousel.turnShooterOnOffByRpm(currentRpm);
+        carousel.turnShooterOnOffByRpm(currentRpm - 100);
 
         /// /////////////////////////////////////
         // BACK AWAY FROM GOAL
         /// ////////////////////////////////////
         double backMovePower = -0.6;
         moveRobot(backMovePower, 0, 0.0);
-        sleep(1350);
+        sleep(850);
 
         int slowdownCounter = 200;
         while (slowdownCounter > 0) {
@@ -101,13 +104,13 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         moveRobot(0, 0, 0);
         sleep(2000);
 
+
         carousel.turnIntakeMotorOn();
         /// /////////////////////////////////////
         // SHOOTING GOAL
         /// ////////////////////////////////////
         shootAtTargetTag();
         carousel.setShootingPower(0);
-        carousel.turnIntakeMotorOff();
 
         /// /////////////////////////////////////
         // GO BACK TO LOADING ZONE OR NEARBY
@@ -124,13 +127,6 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
         moveRobot(0.2, 0, 0);
         sleep(780);
 
-        // if we want to use april tags to move to or away from the robot
-        // goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
-        // or
-        // goToTargetTagDistance(121.0);
-
-        // THE END, SHUTTING DOWN
-        //aprilTagsWebCam.stop();
     }
 
     public void moveRobot(double forward, double strafe, double turn) {
@@ -206,4 +202,63 @@ public class Decode2025_Auto_Blue_ByGoal_RPM extends LinearOpMode {
     }
 
 
+    double distanceToTarget = 0;
+
+    private void goToTarget(double desiredDistance) {
+        while (opModeIsActive())
+        {
+            boolean targetFound = false;
+
+            double drive;
+            double turn;
+            double strafe;
+
+//            aprilTagsWebCam.update();
+            AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+            if (targetTag == null) {
+                telemetry.addData("Tag NOt Detected", SHOOTING_TARGET_TAG_ID);
+            } else {
+                if (targetTag.ftcPose != null) {
+                    distanceToTarget = targetTag.ftcPose.range;
+                    targetFound = true;
+                    aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+                }
+            }
+
+            // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
+            if (targetFound) {
+
+                // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+                double  rangeError      = (targetTag.ftcPose.range - desiredDistance);
+                double  headingError    = targetTag.ftcPose.bearing;
+                double  yawError        = targetTag.ftcPose.yaw;
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
+                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+                strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
+
+                // rangeError is less than .8", stop and exit method
+                if (Math.abs(rangeError) < 0.8) {
+                    driver.drive(0,0,0);
+                    return;
+                }
+
+                telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
+            }
+            else {
+                // rotate until we see the tag
+                turn   = -0.0;
+                drive  = -0.05;
+                strafe = 0;
+                telemetry.addLine("Looking for tag ...");
+            }
+            telemetry.update();
+
+            // Apply desired axes motions to the drivetrain.
+            driver.drive(drive, -strafe, -turn);
+            sleep(10);
+        }
+    }
 }
