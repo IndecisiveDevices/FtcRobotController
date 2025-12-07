@@ -93,6 +93,7 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
         moveRobot(backMovePower, 0, 0.0);
         sleep(850);
 
+        // controlled slowdown to reduce accidental rotation on sudden stop
         int slowdownCounter = 200;
         while (slowdownCounter > 0) {
             backMovePower *= 0.75;
@@ -103,6 +104,19 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
 
         moveRobot(0, 0, 0);
         sleep(2000);
+
+        moveRobot(0, 0, 0.2);
+        sleep(1000);
+
+        moveRobot(0, 0, 0);
+
+        findClassificationIdTag();
+
+        moveRobot(0, 0, -0.2);
+        sleep(1000);
+
+        moveRobot(0, 0, 0);
+
 
 
         carousel.turnIntakeMotorOn();
@@ -127,6 +141,57 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
         moveRobot(0.2, 0, 0);
         sleep(780);
 
+    }
+
+    protected void findClassificationIdTag() {
+        int retryCounter = 0;
+        // Increased the limit slightly to give more time if needed.
+        // This loop will run for a maximum of 30 * 50ms = 1.5 seconds.
+        final int RETRY_LIMIT = 30;
+
+        List<AprilTagDetection> detectedTags = null;
+
+        // This loop is the core of the retry logic.
+        // It continues as long as the OpMode is active AND we haven't exceeded our retries.
+        while (opModeIsActive() && retryCounter < RETRY_LIMIT) {
+            detectedTags = aprilTagsWebCam.getFreshDetections();
+
+            // If detections are found (not null and not empty), exit the loop.
+            if (detectedTags != null && !detectedTags.isEmpty()) {
+                telemetry.addLine("Tags detected. Processing...");
+                telemetry.update();
+                break; // Success! Exit the while loop.
+            }
+
+            // If we're still here, it means we found no tags.
+            telemetry.addData("Finding tag... Attempt", "%d / %d", retryCounter + 1, RETRY_LIMIT);
+            telemetry.update();
+
+            retryCounter++;
+            sleep(50); // Wait briefly before the next attempt to not overwhelm the CPU.
+        }
+
+        // for each tag, if the id is GREEN_PURPLE_PURPLE_TAG_ID
+
+        if (detectedTags == null) {
+            telemetry.addLine("No tags detected");
+            return;
+        }
+
+        telemetry.addLine("We have tags detected: " + detectedTags.size());
+
+        for (AprilTagDetection tag : detectedTags) {
+            telemetry.addData("tag.id: ", tag.id);
+            if (tag.id == GREEN_PURPLE_PURPLE_TAG_ID ||
+                    tag.id == PURPLE_GREEN_PURPLE_TAG_ID ||
+                    tag.id == PURPLE_PURPLE_GREEN_TAG_ID) {
+                classificationTagId = tag.id;
+                return;
+            }
+        }
+
+        // This part runs if tags were seen, but none were the classification tags.
+        telemetry.addLine("WARN: Tags were visible, but none were a valid classification tag.");
     }
 
     public void moveRobot(double forward, double strafe, double turn) {

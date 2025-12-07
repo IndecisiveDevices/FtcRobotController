@@ -22,6 +22,11 @@ public class Auto_Blue_CF extends Auto_Blue_ByGoal {
         moveRobot(0, 0, 0);
         sleep(3500);
 
+        findClassificationIdTag();
+
+        moveRobot(0, 0, -.1);
+        sleep(500);
+
         /// /////////////////////////////////////
         // SHOOTING
         /// ////////////////////////////////////
