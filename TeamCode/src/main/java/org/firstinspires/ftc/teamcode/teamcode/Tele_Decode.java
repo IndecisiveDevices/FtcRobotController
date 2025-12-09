@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
+import java.util.List;
+
 @TeleOp(name = "Tele_Decode", group = "Decode")
 public class Tele_Decode extends OpMode {
     MecanumDrive driver = new MecanumDrive();
@@ -32,8 +34,8 @@ public class Tele_Decode extends OpMode {
     final double MAX_RPM = 5800;
     final double RPM_NEEDED_PER_INCH = (RPM_OF_SHOT_WHEN_TESTED / TESTED_CAMERA_TO_TARGET_INCHES);
 
-    final static double CROSS_FIELD_SHOT_RPM = 3900;
-    final static double CLOSE_SHOT_RPM = 3450;
+    final static double CROSS_FIELD_SHOT_RPM = 3450;
+    final static double CLOSE_SHOT_RPM = 2700;
 
     double currentRpm = CLOSE_SHOT_RPM; //<-- Hard-coded instead of RPM_OF_SHOT_WHEN_TESTED;
 
@@ -50,7 +52,7 @@ public class Tele_Decode extends OpMode {
         lifter.initialize(hardwareMap, telemetry);
         carousel.initialize(hardwareMap, telemetry);
         aprilTagsWebCam.initialize(hardwareMap, telemetry);
-//        aprilTagsWebCam.autoSetExposure(3000);
+        aprilTagsWebCam.autoSetExposure(3000);
     }
 
     @Override
@@ -72,24 +74,10 @@ public class Tele_Decode extends OpMode {
             SHOOTING_TARGET_TAG_ID = RED_TAG_ID;
         }
         if (SHOOTING_TARGET_TAG_ID == BLUE_TAG_ID) {
-            telemetry.addData("Target tag: ", "Blue");
+            telemetry.addLine("\uD83D\uDFE6 \uD83D\uDFE6  BLUE TARGET \uD83D\uDFE6 \uD83D\uDFE6");
         }
         else if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
-            telemetry.addData("Target tag: ", "Red");
-        }
-
-        aprilTagsWebCam.update();
-        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
-
-        double distanceToTarget = 0;
-
-        if (targetTag == null) {
-            telemetry.addData("No Tag Detected", "");
-        } else {
-            if (targetTag.ftcPose != null) {
-                distanceToTarget = targetTag.ftcPose.range;
-            }
-            aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+            telemetry.addLine("\uD83D\uDFE5 \uD83D\uDFE5  RED TARGET\uD83D\uDFE5 \uD83D\uDFE5");
         }
 
         //----------------------------
@@ -100,18 +88,32 @@ public class Tele_Decode extends OpMode {
         double rotate = gamepad1.right_stick_x;
 
         if (gamepad1.left_trigger > 0) {
-            forward = forward/2;
-            strafe = strafe/2;
-            rotate = rotate/2;
+            if (gamepad1.dpad_down) {
+                forward = 0;
+                strafe = 0;
+                rotate = centerOnTarget();
+            } else {
+                forward = forward / 2;
+                strafe = strafe / 2;
+                rotate = rotate / 2;
+            }
         }
 
         driver.drive(forward, strafe, rotate);
+
+        if (gamepad1.dpadLeftWasReleased()) {
+            centerOffSet -= 1.0;
+        } else if (gamepad1.dpadRightWasReleased()) {
+            centerOffSet += 1.0;
+        }
+        telemetry.addLine("CENTER OFFSET: " + centerOffSet + "   )))");
+
 
         //-------------------
         // Carousel Controls
         //-------------------
 
-        telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
+        //telemetry.addData("useCalculatedVelocity RPM: " , useCalculatedVelocity);
 
 
         //----------------------------
@@ -156,6 +158,8 @@ public class Tele_Decode extends OpMode {
 
         }
         else {
+
+            carousel.showCarouselData(false);
             carousel.kick(0.0);
 
             if (gamepad2.dpadUpWasReleased()) {
@@ -166,7 +170,6 @@ public class Tele_Decode extends OpMode {
                 carousel.setShooterRPM(currentRpm);
             }
 
-            carousel.showCarouselData(false);
 
             // if left bumper, got to intake left position
             if (gamepad2.leftBumperWasPressed()) {
@@ -203,9 +206,9 @@ public class Tele_Decode extends OpMode {
             // otherwise, do normal lift control
             if (gamepad1.right_trigger > 0) {
                 if (gamepad1.a) {
-                    lifter.liftDown(gamepad1.right_trigger / 2);
+                    lifter.liftToPosition(7206, 7086, gamepad1.right_trigger / 2);
                 } else {
-                    lifter.liftUp(gamepad1.right_trigger / 2);
+                    lifter.liftToPosition(100, 100, gamepad1.right_trigger / 2);
                 }
             } else {
                 lifter.stopLift();
@@ -215,6 +218,18 @@ public class Tele_Decode extends OpMode {
         //----------------------------
         // Telemetry Update (DONE)
         //----------------------------
+        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+        double distanceToTarget = 0;
+
+        if (targetTag == null) {
+            telemetry.addData("No Tag Detected", "");
+        } else {
+            if (targetTag.ftcPose != null) {
+                distanceToTarget = targetTag.ftcPose.range;
+            }
+            aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+        }
 
         lifter.displayLiftPositions();
         telemetry.update();
@@ -241,83 +256,25 @@ public class Tele_Decode extends OpMode {
     //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
     //  applied to the drive motors to correct the error.
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-    final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-    final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
     final double TURN_GAIN   =  0.02  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-    final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
-    final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
     final double MAX_AUTO_TURN  = 1;   //  Clip the turn speed to this max value (adjust for your robot)
 
-    double distanceToTarget = 0;
-
-    private void goToTarget(double desiredDistance) {
-        boolean targetFound = false;
-
-        double drive;
-        double turn;
-        double strafe;
-
-//        aprilTagsWebCam.update();
-        AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
-
-        if (targetTag == null) {
-            telemetry.addData("Tag NOt Detected", SHOOTING_TARGET_TAG_ID);
-        } else {
-            if (targetTag.ftcPose != null) {
-                distanceToTarget = targetTag.ftcPose.range;
-                targetFound = true;
-                aprilTagsWebCam.displayDetectionTelemetry(targetTag);
-            }
-        }
-
-        // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
-        if (targetFound) {
-
-            // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-            double  rangeError      = (targetTag.ftcPose.range - desiredDistance);
-            double  headingError    = targetTag.ftcPose.bearing;
-            double  yawError        = targetTag.ftcPose.yaw;
-
-            // Use the speed and turn "gains" to calculate how we want the robot to move.
-            drive  = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED);
-            turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
-            strafe = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE);
-
-            // rangeError is less than .8", stop and exit method
-            if (Math.abs(rangeError) < 0.8) {
-                driver.drive(0,0,0);
-                return;
-            }
-
-            telemetry.addData("Auto","Drive %5.2f, Strafe %5.2f, Turn %5.2f ", drive, strafe, turn);
-        }
-        else {
-            // rotate until we see the tag
-            turn   = -0.0;
-            drive  = -0.05;
-            strafe = 0;
-            telemetry.addLine("Looking for tag ...");
-        }
-        telemetry.update();
-
-        // Apply desired axes motions to the drivetrain.
-        driver.drive(drive, -strafe, -turn);
-    }
 
     /**
      * Rotates the robot to center on the specified AprilTag without driving forward or backward.
      * The robot will turn until the tag is directly in front of it (headingError is minimal).
      */
     double centerOffSet = 0;
+    boolean disableGetRefresh = false;
+
     private double centerOnTarget() {
         // First, get the most recent tag data
-//        aprilTagsWebCam.update();
+        aprilTagsWebCam.update();
         AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
 
-        // If the tag isn't found, we can't do anything.
-        if (targetTag == null || targetTag.ftcPose == null) {
-            telemetry.addLine("Cannot center: Tag not visible.");
+        // If the tag isn't found,
+        if (targetTag == null) {
             // Stop any previous movement
             driver.drive(0, 0, 0);
             return 0; // Exit the method

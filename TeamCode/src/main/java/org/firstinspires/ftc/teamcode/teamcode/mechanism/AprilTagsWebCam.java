@@ -126,7 +126,9 @@ public class AprilTagsWebCam {
     }
 
     public AprilTagDetection getTagBySpecificId(int id) {
-        for (AprilTagDetection tag : getDetectedTags()) {
+        List<AprilTagDetection> tags = aprilTagProcessor.getDetections();
+
+        for (AprilTagDetection tag : tags) {
             telemetry.addData("tag.id: ", tag.id);
             if (tag.id == id) {
                 return tag;

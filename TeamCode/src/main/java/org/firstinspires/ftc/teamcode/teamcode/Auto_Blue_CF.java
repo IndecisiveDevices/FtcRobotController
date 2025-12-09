@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 public class Auto_Blue_CF extends Auto_Blue_ByGoal {
     public Auto_Blue_CF() {
         SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;
-        currentRpm = 3300;
+            currentRpm = 3300;
+            centerOffSet = -3.0;
     }
 
     @Override public void runOpMode()
@@ -17,30 +18,39 @@ public class Auto_Blue_CF extends Auto_Blue_ByGoal {
         waitForStart();
         // start the shooter wheel
         carousel.turnShooterOnOffByRpm(currentRpm + 100);
-        carousel.gotoShootingA();
+        carousel.gotoShootingA(); // NOT SHOOTING...just setting the carousel position
 
+        // move robot off the wall
+        moveRobot(0.1, 0, 0);
+        sleep(700);
+
+        // waiting for shooter motor to reach rpm
         moveRobot(0, 0, 0);
-        sleep(3500);
 
         findClassificationIdTag();
+        centerOnTarget();
 
-        moveRobot(0, 0, -.1);
-        sleep(500);
+        sleep(3100);
+
+        telemetry.addData("Classification Tag ID: ", classificationTagId);
+        telemetry.update();
+
+        moveRobot(0, 0,0);
 
         /// /////////////////////////////////////
         // SHOOTING
         /// ////////////////////////////////////
-        carousel.turnIntakeMotorOnOff();
-        shootAtTargetTag();
-        carousel.setShootingPower(0);
+        // carousel.turnIntakeMotorOnOff();
+        // shootAtTargetTag();
+        // carousel.setShootingPower(0);
 
         /// /////////////////////////////////////
         // Move away from launch line
         /// ////////////////////////////////////
-        moveRobot(0.5, 0, 0);
-        sleep(1000);
+        moveRobot(0.05, -0.1, 0);
+        sleep(1500);
 
-        moveRobot(0.0, 0.0, -0.3);
+        moveRobot(0.0, 0.0, 0.3);
         sleep(500);
 
         moveRobot(0,0,0);

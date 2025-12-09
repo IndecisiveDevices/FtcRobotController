@@ -337,4 +337,12 @@ public class Auto_Coach extends LinearOpMode {
             sleep(10);
         }
     }
+
+    private void waitForRpm(){
+        while (!carousel.targetRpmReached()) {
+            telemetry.addLine("Waiting to reach target RPM: ");
+            telemetry.update();
+            sleep(100);
+        }
+    }
 }

@@ -54,10 +54,9 @@ public class Lift {
 
 
     // Left motors to a target position
-    // 7260 was the last logged.
-    public void liftToPosition(int position, double power) {
-        liftMotor0.setTargetPosition(position);
-        liftMotor1.setTargetPosition(position);
+    public void liftToPosition(int leftPosition, int rightPosition, double power) {
+        liftMotor0.setTargetPosition(leftPosition);
+        liftMotor1.setTargetPosition(rightPosition);
 
         liftMotor0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         liftMotor1.setMode(DcMotor.RunMode.RUN_TO_POSITION);

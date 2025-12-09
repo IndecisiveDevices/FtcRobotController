@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.AprilTagsWebCam;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
@@ -27,11 +29,11 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
     //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
     final double SPEED_GAIN  =  0.02  ;   //  Forward Speed Control "Gain". e.g. Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
     final double STRAFE_GAIN =  0.015 ;   //  Strafe Speed Control "Gain".  e.g. Ramp up to 37% power at a 25 degree Yaw error.   (0.375 / 25.0)
-    final double TURN_GAIN   =  0.01  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+    final double TURN_GAIN   =  0.015  ;   //  Turn Control "Gain".  e.g. Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
     final double MAX_AUTO_SPEED = 0.5;   //  Clip the approach speed to this max value (adjust for your robot)
     final double MAX_AUTO_STRAFE= 0.5;   //  Clip the strafing speed to this max value (adjust for your robot)
-    final double MAX_AUTO_TURN  = 0.3;   //  Clip the turn speed to this max value (adjust for your robot)
+    final double MAX_AUTO_TURN  = 0.5;   //  Clip the turn speed to this max value (adjust for your robot)
 
     // If using auto "drive to target", change this distance in front of the target you want the bot
     // to drive to in inches. example: goToTargetTagDistance(DESIRED_DISTANCE_TO_TARGET);
@@ -105,14 +107,14 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
         moveRobot(0, 0, 0);
         sleep(2000);
 
-        moveRobot(0, 0, 0.2);
+        moveRobot(0, 0, 0.3);
         sleep(1000);
 
         moveRobot(0, 0, 0);
 
         findClassificationIdTag();
 
-        moveRobot(0, 0, -0.2);
+        moveRobot(0, 0, -0.3);
         sleep(1000);
 
         moveRobot(0, 0, 0);
@@ -210,12 +212,16 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
         // Now that we set the classification tag id, we can shoot.
         telemetry.addLine("Getting ready to shoot in 3 seconds");
         if (classificationTagId == GREEN_PURPLE_PURPLE_TAG_ID) {
+            carousel.setShooterRPM(currentRpm + 80);
             shootGreen();
+            carousel.setShooterRPM(currentRpm);
             shootPurpleOne();
             shootPurpleTwo();
         } else if (classificationTagId == PURPLE_GREEN_PURPLE_TAG_ID) {
             shootPurpleOne();
+            carousel.setShooterRPM(currentRpm + 80);
             shootGreen();
+            carousel.setShooterRPM(currentRpm);
             shootPurpleTwo();
         } else { // is either PURPLE_PURPLE_GREEN_TAG_ID or the default if classificationId not found
             shootPurpleOne();
@@ -326,4 +332,72 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
             sleep(10);
         }
     }
+
+
+    /**
+     * Rotates the robot to center on the specified AprilTag without driving forward or backward.
+     * The robot will turn until the tag is directly in front of it (headingError is minimal).
+     */
+    double centerOffSet = 0;
+    boolean disableGetRefresh = false;
+
+    protected void centerOnTarget() {
+        ElapsedTime timer = new ElapsedTime();
+        double timeoutMs = 500;
+
+        while (opModeIsActive())
+        {
+            // set a default exposure if we
+            if (timer.milliseconds() > timeoutMs) {
+                moveRobot(0,0,0);
+                return;
+            }
+
+            boolean targetFound = false;
+            double turn = 0;
+
+            // First, get the most recent tag data
+            aprilTagsWebCam.update();
+            AprilTagDetection targetTag = aprilTagsWebCam.getTagBySpecificId(SHOOTING_TARGET_TAG_ID);
+
+            if (targetTag == null) {
+                telemetry.addData("Tag NOt Detected", SHOOTING_TARGET_TAG_ID);
+            } else {
+                if (targetTag.ftcPose != null) {
+                    targetFound = true;
+                    aprilTagsWebCam.displayDetectionTelemetry(targetTag);
+                }
+            }
+
+            // If Left Bumper is being pressed, AND we have found the desired target, Drive to target Automatically .
+            if (targetFound) {
+
+                // The 'bearing' or 'headingError' is the angle we need to correct.
+                // A positive value means the tag is to our right, so we need to turn right.
+                // A negative value means the tag is to our left, so we need to turn left.
+                double headingError = targetTag.ftcPose.bearing - centerOffSet; // blue
+
+                // Use the speed and turn "gains" to calculate how we want the robot to move.
+                turn   = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN) ;
+
+                // Stop turning if we are centered (e.g., within 2 degrees).
+                // This prevents the robot from jittering back and forth.
+                final double HEADING_TOLERANCE = 0.5; // degrees
+                if (Math.abs(headingError) <= HEADING_TOLERANCE) {
+                    telemetry.addLine("Centered on Target!");
+                    driver.drive(0, 0, 0); // Stop turning
+                    return; // We are centered, so we're done.
+                }
+                telemetry.addLine("Centering...");
+            }
+
+            telemetry.update();
+
+            // Apply desired axes motions to the drivetrain.
+            moveRobot(0, 0, -turn);
+            sleep(10);
+        }
+
+    }
+
 }

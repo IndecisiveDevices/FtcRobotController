@@ -300,7 +300,7 @@ public class Carousel {
     public void showCarouselData(boolean isShooting) {
         telemetry.addLine("Ready to Fire: " + (targetRpmReached() ? "✅" : "❌"));
         telemetry.addLine(
-                "Intake Motor: " + (intakeMotorIsOn ? "\uD83D\uDCA1" : "⚫") +
+                "Intake On: " + (intakeMotorIsOn ? "\uD83D\uDCA1" : "⚫") +
                         "   |    " +
                         "Shooter RPM: " + (int)getShooterRPM()
         );

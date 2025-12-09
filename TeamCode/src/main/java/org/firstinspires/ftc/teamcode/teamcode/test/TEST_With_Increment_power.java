@@ -115,17 +115,17 @@ public class TEST_With_Increment_power extends OpMode {
         double strafe = gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
 
-        if (gamepad1.left_trigger > 0) {
-            if (gamepad1.dpad_down) {
-                forward = 0;
-                strafe = 0;
-                rotate = centerOnTarget();
-            } else {
-                forward = forward / 2;
-                strafe = strafe / 2;
-                rotate = rotate / 2;
-            }
-        }
+//        if (gamepad1.left_trigger > 0) {
+//            if (gamepad1.dpad_down) {
+//                forward = 0;
+//                strafe = 0;
+//                rotate = centerOnTarget();
+//            } else {
+//                forward = forward / 2;
+//                strafe = strafe / 2;
+//                rotate = rotate / 2;
+//            }
+//        }
 
         driver.drive(forward, strafe, rotate);
 
@@ -235,25 +235,36 @@ public class TEST_With_Increment_power extends OpMode {
         boolean robotIsStopped = isRobotStopped(forward, strafe, rotate);
 
         if (robotIsStopped) {
-            // otherwise, do normal lift control
-            if (gamepad1.right_trigger > 0) {
-                if (gamepad1.a) {
-                    lifter.liftDown(gamepad1.right_trigger / 2);
-                } else {
-                    lifter.liftUp(gamepad1.right_trigger / 2);
-                }
+//            // otherwise, do normal lift control
+//            if (gamepad1.right_trigger > 0) {
+//                if (gamepad1.a) {
+//                    lifter.liftDown(gamepad1.right_trigger / 2);
+//                } else {
+//                    lifter.liftUp(gamepad1.right_trigger / 2);
+//                }
+//            } else {
+//                lifter.stopLift();
+//            }
+
+            if (gamepad1.a) {
+                lifter.liftLeft(-gamepad1.left_trigger);
+                lifter.liftRight(-gamepad1.right_trigger);
             } else {
-                lifter.stopLift();
+                lifter.liftLeft(gamepad1.left_trigger);
+                lifter.liftRight(gamepad1.right_trigger);
             }
+
         }
 
         //----------------------------
         // Telemetry Update (DONE)
         //----------------------------
-
+        telemetry.addData("liftRatio: ", liftRatio);
         lifter.displayLiftPositions();
         telemetry.update();
     }
+
+    double liftRatio = 0.5;
 
     public double calculateShooterRPM(double inches) {
         if (inches < 16) {
