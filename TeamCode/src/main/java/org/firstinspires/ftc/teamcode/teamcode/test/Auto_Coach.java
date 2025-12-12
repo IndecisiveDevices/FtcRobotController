@@ -126,7 +126,7 @@ public class Auto_Coach extends LinearOpMode {
         moveRobot(0.0, -0.3, 0.0);
         sleep(1000);
 
-        // then move backward to the loading zone
+        // then move forward to the loading zone
         moveRobot(0.4, 0, -0.3);
         sleep(500);
 

@@ -279,9 +279,11 @@ public class Carousel {
         shooterMotor.setVelocity(shooterMotorIsOn ? ticksPerSecond : 0);
     }
 
-    public void kick(double power) {
-        kicker.setPosition(power);
-        if (power > 0) {
+    public void kick(double position) {
+        double newPower = Math.max(0.5, position);
+
+        kicker.setPosition(newPower);
+        if (position > 0) {
             removeSlotColor();
         }
     }

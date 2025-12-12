@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -118,7 +119,7 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
         sleep(1000);
 
         moveRobot(0, 0, 0);
-
+        sleep(2000); // extra wait for first shot
 
 
         carousel.turnIntakeMotorOn();
@@ -211,22 +212,18 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
 
         // Now that we set the classification tag id, we can shoot.
         telemetry.addLine("Getting ready to shoot in 3 seconds");
+
         if (classificationTagId == GREEN_PURPLE_PURPLE_TAG_ID) {
-            carousel.setShooterRPM(currentRpm + 80);
             shootGreen();
-            carousel.setShooterRPM(currentRpm);
             shootPurpleOne();
             shootPurpleTwo();
         } else if (classificationTagId == PURPLE_GREEN_PURPLE_TAG_ID) {
             shootPurpleOne();
-            carousel.setShooterRPM(currentRpm + 80);
             shootGreen();
-            carousel.setShooterRPM(currentRpm);
             shootPurpleTwo();
         } else { // is either PURPLE_PURPLE_GREEN_TAG_ID or the default if classificationId not found
             shootPurpleOne();
             shootPurpleTwo();
-            carousel.setShooterRPM(currentRpm);
             shootGreen();
         }
     }
@@ -239,7 +236,7 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
     private void shootGreen() {
         carousel.gotoShootingA();
         sleep(SLEEP_AFTER_POSITIONS);
-        telemetry.addLine(" RPM:" + carousel.getShooterRPM());
+        waitForRpm();
         useKicker();
         sleep(SLEEP_AFTER_SHOOT);
     }
@@ -248,9 +245,8 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
     private void shootPurpleOne() {
         carousel.gotoShootingB();
         sleep(SLEEP_AFTER_POSITIONS);
-        telemetry.addLine(" RPM:" + carousel.getShooterRPM());
+        waitForRpm();
         useKicker();
-        carousel.setShooterRPM(currentRpm - 100); // TEMP
         sleep(SLEEP_AFTER_SHOOT);
     }
 
@@ -258,7 +254,6 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
     private void shootPurpleTwo() {
         carousel.gotoShootingX();
         sleep(SLEEP_AFTER_POSITIONS);
-        telemetry.addLine(" RPM:" + carousel.getShooterRPM());
         useKicker();
         sleep(SLEEP_AFTER_SHOOT);
     }
@@ -266,6 +261,7 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
     // Sets carousel.kick position to 1.0 for 1 second.
     // then sets kick position to 0.0 and sleeps for 1 second
     private void useKicker() {
+        waitForRpm();
         carousel.kick(1.0);
         sleep(SLEEP_AFTER_KICK);
         carousel.kick(0.0);
@@ -339,7 +335,6 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
      * The robot will turn until the tag is directly in front of it (headingError is minimal).
      */
     double centerOffSet = 0;
-    boolean disableGetRefresh = false;
 
     protected void centerOnTarget() {
         ElapsedTime timer = new ElapsedTime();
@@ -393,11 +388,25 @@ public class Auto_Blue_ByGoal extends LinearOpMode {
 
             telemetry.update();
 
-            // Apply desired axes motions to the drivetrain.
+            // Apply this as the moveRobot is already accounting for the inverse
+            // for other movements. But the centering code actually sets the correct
+            // value. So we need to inverse before the inverse!!
+            if (SHOOTING_TARGET_TAG_ID == RED_TAG_ID) {
+                turn = -turn;
+            }
             moveRobot(0, 0, -turn);
             sleep(10);
         }
 
+    }
+
+    private void waitForRpm(){
+        while (!carousel.targetRpmReached()) {
+            telemetry.addData("Target RPM", currentRpm );
+            telemetry.addData("Current RPM", carousel.getShooterRPM());
+            telemetry.update();
+            sleep(100);
+        }
     }
 
 }

@@ -17,7 +17,7 @@ public class Auto_Blue_CF extends Auto_Blue_ByGoal {
         initialize();
         waitForStart();
         // start the shooter wheel
-        carousel.turnShooterOnOffByRpm(currentRpm + 100);
+        carousel.turnShooterOnOffByRpm(currentRpm);
         carousel.gotoShootingA(); // NOT SHOOTING...just setting the carousel position
 
         // move robot off the wall
@@ -30,19 +30,20 @@ public class Auto_Blue_CF extends Auto_Blue_ByGoal {
         findClassificationIdTag();
         centerOnTarget();
 
-        sleep(3100);
+//        sleep(3100);
 
         telemetry.addData("Classification Tag ID: ", classificationTagId);
         telemetry.update();
 
         moveRobot(0, 0,0);
+        sleep(2000); // extra wait for first shot
 
         /// /////////////////////////////////////
         // SHOOTING
         /// ////////////////////////////////////
-        // carousel.turnIntakeMotorOnOff();
-        // shootAtTargetTag();
-        // carousel.setShootingPower(0);
+         //carousel.turnIntakeMotorOnOff();
+         shootAtTargetTag();
+         carousel.setShootingPower(0);
 
         /// /////////////////////////////////////
         // Move away from launch line
