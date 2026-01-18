@@ -148,9 +148,9 @@ public class Tele_Decode extends OpMode {
                 carousel.gotoShootingA();
             } else {
                 if (gamepad2.right_trigger > 0) {
-                    if (carousel.targetRpmReached()) {
+                   // if (carousel.targetRpmReached()) {
                         carousel.kick(1.0);
-                    }
+                    //}
                 } else {
                     carousel.kick(0.0);
                 }
