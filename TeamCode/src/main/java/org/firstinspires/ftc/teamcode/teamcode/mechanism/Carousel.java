@@ -7,7 +7,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -42,7 +44,19 @@ public class Carousel {
     public final Slot slotB = new Slot(B_INTAKE_POSITION, B_SHOOTING_POSITION, "B");
     public final Slot slotX = new Slot(X_INTAKE_POSITION, X_SHOOTING_POSITION, "X");
 
-    public final Slot[] allSlots = {slotA, slotB, slotX};
+    public final Slot[] allSlots = {slotB, slotA, slotX, };
+
+    // p, i, d, f coefficients
+    public PIDCoefficients pidCoefficients = new PIDCoefficients(
+            100,
+            1.05,
+            3.0);
+//    public PIDCoefficients pidCoefficients = new PIDCoefficients(
+//            100,
+//            0.85,
+//            3.0);
+
+    double f = 0.0009434;
 
     public void initialize(HardwareMap hardwareMap, Telemetry telemetry) {
 
@@ -62,6 +76,13 @@ public class Carousel {
         shooterMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         shooterMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // Set the motor to use its encoder to maintain a target velocity.
 
+
+        shooterMotor.setVelocityPIDFCoefficients(
+                pidCoefficients.p,
+                pidCoefficients.i,
+                pidCoefficients.d,
+                f);
+
         intakeMotor = hardwareMap.get(DcMotor.class, "intakeMotor"); // port: 0
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -73,9 +94,7 @@ public class Carousel {
      *  Slot C  --> Slot B --> Slot A
      */
     public void nextRightIntakePosition() {
-        saveSlotColor();
         double currentPosition = carousel.getPosition() + 0.001;
-        Slot nextSlot = null;
 
         // We want to move clockwise (right) to the next position
         // so that means we need to order our if/else condition to
@@ -86,17 +105,15 @@ public class Carousel {
         // - 0.968 (A): if it is less than this, move to this position A
         // - if greater than A, go back to X.
         if (currentPosition < slotX.intakePosition) {
-            nextSlot = slotX;
+            gotoIntakeX();
         } else if (currentPosition < slotB.intakePosition) {
-            nextSlot = slotB;
+            gotoIntakeB();
         } else if (currentPosition < slotA.intakePosition) {
-            nextSlot = slotA;
+            gotoIntakeA();
         } else {
-            nextSlot = slotX;
+            gotoIntakeX();
         }
 
-        carousel.setPosition(nextSlot.intakePosition);
-        telemetry.addData("Intake Set to Slot: ", nextSlot.name);
     }
 
     /**
@@ -105,22 +122,17 @@ public class Carousel {
      *  Slot B <--  Slot A <-- Slot C
      */
     public void nextLeftIntakePosition() {
-        saveSlotColor();
         double currentPosition = carousel.getPosition() - 0.001;
-        Slot nextSlot = null;
 
-        if (currentPosition > slotB.intakePosition) {
-            nextSlot = slotB;
-        } else if (currentPosition > slotA.intakePosition) {
-            nextSlot = slotA;
-        } else if (currentPosition > slotX.intakePosition) {
-            nextSlot = slotX;
+        if (currentPosition > slotA.intakePosition) {
+            gotoIntakeA();
+        } else if (currentPosition > slotB.intakePosition) {
+            gotoIntakeB();
+        } else  if (currentPosition > slotX.intakePosition) {
+            gotoIntakeX();
         } else {
-            nextSlot = slotB;
+            gotoIntakeA();
         }
-
-        carousel.setPosition(nextSlot.intakePosition);
-        telemetry.addData( "Intake Set to Slot: ",  nextSlot.name);
     }
 
 
@@ -130,69 +142,71 @@ public class Carousel {
      *  Slot B <--  Slot A <-- Slot C
      */
     public void nextRightShootingPosition() {
-        saveSlotColor();
         double currentPosition = carousel.getPosition() + 0.001;
-        Slot nextSlot = null;
 
         if (currentPosition < slotB.shootingPosition) {
-            nextSlot = slotB;
+            gotoShootingB();
         } else if (currentPosition < slotA.shootingPosition) {
-            nextSlot = slotA;
+            gotoShootingA();
         } else if (currentPosition < slotX.shootingPosition) {
-            nextSlot = slotX;
-        } else {
-            nextSlot = slotB;
+            gotoShootingX();
+        } else  {
+            gotoShootingB();
         }
-
-        carousel.setPosition(nextSlot.shootingPosition);
-        telemetry.addData("Shooting Set to Slot: ", nextSlot.name);
-
     }
 
     public void nextLeftShootingPosition() {
-        saveSlotColor();
         double currentPosition = carousel.getPosition() - 0.001;
-        Slot nextSlot = null;
 
         if (currentPosition > slotX.shootingPosition) {
-            nextSlot = slotX;
+            gotoShootingX();
         } else if (currentPosition > slotA.shootingPosition) {
-            nextSlot = slotA;
+            gotoShootingA();
         } else if (currentPosition > slotB.shootingPosition) {
-            nextSlot = slotB;
+            gotoShootingB();
         } else {
-            nextSlot = slotX;
+            gotoShootingX();
         }
-
-        carousel.setPosition(nextSlot.shootingPosition);
-        telemetry.addData("Shooting Set to Slot: ", nextSlot.name);
     }
 
     public void gotoIntakeA() {
-        saveSlotColor();
-        carousel.setPosition(slotA.intakePosition);
+        setCarouselPosition(slotA.intakePosition, true);
     }
 
     public void gotoIntakeB() {
-        saveSlotColor();
-        carousel.setPosition(slotB.intakePosition);
+        setCarouselPosition(slotB.intakePosition, true);
     }
 
     public void gotoIntakeX() {
-        saveSlotColor();
-        carousel.setPosition(slotX.intakePosition);
+        setCarouselPosition(slotX.intakePosition, true);
     }
 
     public void gotoShootingA() {
-        carousel.setPosition(slotA.shootingPosition);
+        setCarouselPosition(slotA.shootingPosition, false);
     }
 
     public void gotoShootingB() {
-        carousel.setPosition(slotB.shootingPosition);
+        setCarouselPosition(slotB.shootingPosition, false);
     }
 
     public void gotoShootingX() {
-        carousel.setPosition(slotX.shootingPosition);
+        setCarouselPosition(slotX.shootingPosition, false);
+    }
+
+    ElapsedTime servoTimer = new ElapsedTime();
+    int maxServoTime = 1197; // 1.197 seconds for 280 degrees.
+    int currentTimerSetting = 0;
+
+    private void setCarouselPosition(double position, boolean saveSlotColor) {
+        if (servoTimer.milliseconds() >= currentTimerSetting) {
+            //if (saveSlotColor) {
+                saveSlotColor();
+            //};
+            // get difference between current position (0.020) and incoming position (0.080), represented as milliseconds (80)
+            currentTimerSetting = (int)(Math.abs(carousel.getPosition() - position) * maxServoTime);
+            carousel.setPosition(position);
+            servoTimer.reset();
+        }
     }
 
     /**
@@ -258,41 +272,68 @@ public class Carousel {
         return revolutionsPerMinute;
     }
 
+    double targetRpm = 0;
     public void setShooterRPM(double rpm) {
-        rpm = Math.min(rpm, MAX_SHOOTER_RPM);
-        double ticksPerSecond = (rpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
-        //telemetry.addLine("ticketPerSecond" + ticksPerSecond);
+        targetRpm = Math.min(rpm, MAX_SHOOTER_RPM);
+        double ticksPerSecond = (targetRpm / 60.0) * SHOOTER_TICKS_PER_REVOLUTION;
         shooterMotor.setVelocity(shooterMotorIsOn ? ticksPerSecond : 0);
     }
 
-    public void kick(double power) {
-        kicker.setPosition(power);
+    public void kick(double position) {
+        double newPower = Math.max(0.5, position);
+
+        kicker.setPosition(newPower);
+        if (position > 0) {
+            removeSlotColor();
+        }
     }
 
-    public void showCarouselData() {
-        telemetry.addLine("Shooter RPM: " + (int)getShooterRPM());
+    // function to determine if the incoming RPM is within the acceptable range
+    // to fire the shooter. Acceptable range is within 65 RPM of the currentRpm value.
+    // takes arguments "currentRpm" and "measuredRpm"
+    public boolean targetRpmReached() {
+        final double ACCEPTABLE_RANGE = 75.0;
+        if (targetRpm < 100) {
+            return false;
+        }
+        return Math.abs(targetRpm - getShooterRPM()) <= ACCEPTABLE_RANGE;
+    }
+
+    public void showCarouselData(boolean isShooting) {
+        telemetry.addLine("Ready to Fire: " + (targetRpmReached() ? "✅" : "❌"));
+        telemetry.addLine(
+                "Intake On: " + (intakeMotorIsOn ? "\uD83D\uDCA1" : "⚫") +
+                        "   |    " +
+                        "Shooter RPM: " + (int)getShooterRPM()
+        );
+        telemetry.addLine(" ");
 
         for (Slot slot : allSlots) {
             if (slot == null ) {
                 continue;
             }
 
-            String colorEmoji = NONE_EMOJI;
+            String colorEmoji = "";
             if (slot.color == ClassificationColor.Green) {
                 colorEmoji = GREEN_EMOJI;
             } else if (slot.color == ClassificationColor.Purple) {
                 colorEmoji = PURPLE_EMOJI;
+            } else if (slot.color == ClassificationColor.None) {
+                colorEmoji = NONE_EMOJI;
             }
 
-            telemetry.addLine("Slot: " + slot.name + " " + colorEmoji);
-            telemetry.addLine("  Ready for Intake: " + (slot.isReadyForIntake() ? READY_EMOJI : NOT_READY_EMOJI ));
-            telemetry.addLine("  Ready for Shot: " + (slot.isReadyForShot() ? READY_EMOJI : NOT_READY_EMOJI));
-        }
+            String shootIntakeMsg = "";
 
-        // display if intake motor is on or off
-        telemetry.addLine("Intake Motor: " + (intakeMotorIsOn ? "\uD83D\uDCA1" : "⚫"));
-//        telemetry.addLine("Carousel Position: " + carousel.getPosition());
-//        telemetry.addLine("Color at Intake: " + getClassificationColor().toString());
+            if (isShooting) {
+                shootIntakeMsg = "Shoot: " + (slot.isReadyForShot() ? READY_EMOJI : NOT_READY_EMOJI);
+            } else {
+                shootIntakeMsg = "Intake: " + (slot.isReadyForIntake() ? READY_EMOJI : NOT_READY_EMOJI);
+            }
+
+
+            telemetry.addLine("Slot: " + slot.name + " " + colorEmoji + "    |    " + shootIntakeMsg);
+            telemetry.addLine(" ");
+        }
     }
 
     public void turnIntakeMotorOn() {
@@ -346,7 +387,7 @@ public class Carousel {
 
         // Define a small tolerance for our comparison.
         // 0.001 is a good starting point since servo positions are usually between 0.0 and 1.0.
-        private static final double tolerance = 0.001;
+        private static final double tolerance = 0.0005;
 
         public boolean isReadyForShot(double currPosition) {
             // Check if the absolute difference between the two positions is within our tolerance.
@@ -384,17 +425,20 @@ public class Carousel {
         telemetry.addData("Color is closest to", getClassificationColor().toString());
     }
 
-    private void saveSlotColor() {
+    public void saveSlotColor() {
         double currPosition = carousel.getPosition();
+        ClassificationColor color = getClassificationColor();
 
         for (Slot slot : allSlots) {
             if (slot.isReadyForIntake(currPosition)) {
-                slot.color = getClassificationColor();
+                slot.color = color;
+                //sleep(2500);
             }
         }
     }
 
-    private void removeslotXolor() {
+
+    private void removeSlotColor() {
         for (Slot slot : allSlots) {
             if (slot.isReadyForShot()) {
                 slot.color = ClassificationColor.None;
@@ -433,5 +477,16 @@ public class Carousel {
             return ClassificationColor.Purple;
         }
     }
+    public void setLongRangePidCoefficients(){
+//        shooterMotor.setPIDFCoefficients(
+//                longRangeCoefficients.p,
+//                longRangeCoefficients.i,
+//                longRangeCoefficients.d,
+//                f
+//        );
+    }
 
+    public void setShortRangePidCoefficients(){
+
+    }
 }
