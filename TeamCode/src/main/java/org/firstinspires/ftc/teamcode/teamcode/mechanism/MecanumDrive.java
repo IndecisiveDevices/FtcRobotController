@@ -15,17 +15,23 @@ public class MecanumDrive {
     // can be used to determine robot orientation (gyro)
     private IMU imu;
 
-    public void initialize(HardwareMap hardwareMap) {
+    public void initialize(HardwareMap hardwareMap, String frontLeftMotorName, String frontRightMotorName, String rearLeftMotorName, String rearRightMotorName) {
         this.hardwareMap = hardwareMap;
-        initDriveMotors();
+        initDriveMotors(frontLeftMotorName, frontRightMotorName, rearLeftMotorName, rearRightMotorName);
         initImu();
     }
 
-    private void initDriveMotors() {
-        frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeft_motor"); // expansion port: 0
-        frontRightDrive = hardwareMap.get(DcMotor.class, "frontRight_motor"); // expansion port: 2
-        rearLeftDrive = hardwareMap.get(DcMotor.class, "rearLeft_motor"); // expansion port: 1
-        rearRightDrive = hardwareMap.get(DcMotor.class, "rearRight_motor"); // expansion port: 3
+    // defaults to motor names "frontLeft_motor" "frontRight_motor" "rearLeft_motor"
+    //"rearRight_motor"
+    public void initialize(HardwareMap hardwareMap) {
+        this.initialize(hardwareMap, "front_left_drive", "front_right_drive", "back_left_drive", "back_right_drive");
+    }
+
+    private void initDriveMotors(String frontLeftMotorName, String frontRightMotorName, String rearLeftMotorName, String rearRightMotorName) {
+        frontLeftDrive = hardwareMap.get(DcMotor.class, frontLeftMotorName);
+        frontRightDrive = hardwareMap.get(DcMotor.class, frontRightMotorName);
+        rearLeftDrive = hardwareMap.get(DcMotor.class, rearLeftMotorName);
+        rearRightDrive = hardwareMap.get(DcMotor.class, rearRightMotorName);
 
         frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -66,4 +72,16 @@ public class MecanumDrive {
         this.frontRightDrive.setPower(maxSpeed * (frontRightPower/ maxPower));
     }
 
+    public void powerFrontLeftMotor(double power) {
+        frontLeftDrive.setPower(power);
+    }
+    public void powerFrontRightMotor(double power) {
+        frontRightDrive.setPower(power);
+    }
+    public void powerRearLeftMotor(double power) {
+        rearLeftDrive.setPower(power);
+    }
+    public void powerRearRightMotor(double power) {
+        rearRightDrive.setPower(power);
+    }
 }

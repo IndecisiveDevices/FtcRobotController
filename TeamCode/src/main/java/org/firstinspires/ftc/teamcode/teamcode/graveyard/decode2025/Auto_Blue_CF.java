@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.teamcode;
+package org.firstinspires.ftc.teamcode.teamcode.graveyard.decode2025;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
