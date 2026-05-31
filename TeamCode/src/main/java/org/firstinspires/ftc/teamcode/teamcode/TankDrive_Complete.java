@@ -5,8 +5,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-@TeleOp(name = "Tank Drive Example", group = "Workshop")
-public class TankDriveExample extends OpMode {
+@TeleOp(name = "Ed - Tank Drive Example", group = "Workshop")
+public class TankDrive_Complete extends OpMode {
     private DcMotor frontLeftDrive;
     private DcMotor frontRightDrive;
     private DcMotor rearLeftDrive;
@@ -25,9 +25,9 @@ public class TankDriveExample extends OpMode {
 
     @Override
     public void loop() {
-        //----------------------------
-        // Tank Drive Controls
-        //----------------------------
+        //----------------------------------
+        // Tank Drive Controls with gamepad1
+        //----------------------------------
         double leftPower = -gamepad1.left_stick_y;
         double rightPower = -gamepad1.right_stick_y;
 

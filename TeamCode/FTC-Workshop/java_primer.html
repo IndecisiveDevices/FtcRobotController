@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Java Notes for This FTC Workshop</title>
+  <style>
+    :root {
+      --teal: #11b5b5;
+      --teal-dark: #078b8b;
+      --ink: #111f22;
+      --soft-ink: #34464a;
+      --paper: #ffffff;
+      --panel: #eafbfb;
+      --line: #b8e8e8;
+      --code-bg: #f6f8f8;
+      --red: #c94c59;
+      --gold: #d9b64f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #e9eeee;
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.3;
+    }
+
+    .handout {
+      width: 8.5in;
+      margin: 0 auto;
+      background: var(--paper);
+    }
+
+    .page {
+      width: 8.5in;
+      min-height: 11in;
+      padding: 0.35in 0.45in 0.36in;
+      background: var(--paper);
+      page-break-after: always;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page:last-child { page-break-after: auto; }
+
+    header {
+      border-bottom: 4px solid var(--teal);
+      padding-bottom: 0.12in;
+      margin-bottom: 0.14in;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.18in;
+      align-items: end;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--teal-dark);
+      font-size: 25px;
+      letter-spacing: 0.2px;
+    }
+
+    .subtitle {
+      margin-top: 3px;
+      color: var(--soft-ink);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge {
+      border: 2px solid var(--teal);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      background: #f7ffff;
+    }
+
+    h2 {
+      margin: 0.04in 0 0.05in;
+      color: var(--teal-dark);
+      font-size: 18px;
+    }
+
+    h3 {
+      margin: 0 0 0.04in;
+      font-size: 13.5px;
+      color: var(--ink);
+    }
+
+    p {
+      margin: 0 0 0.06in;
+      font-size: 11.7px;
+    }
+
+    .pair {
+      display: grid;
+      grid-template-columns: 1.95fr 0.72fr;
+      gap: 0.18in;
+      align-items: start;
+      margin-bottom: 0.10in;
+    }
+
+    .right-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.10in;
+    }
+
+    .empty-note { min-height: 1px; }
+
+    .card {
+      border: 1.5px solid var(--line);
+      border-left: 8px solid var(--teal);
+      border-radius: 14px;
+      padding: 0.1in 0.12in;
+      background: #ffffff;
+    }
+
+    .card.yellow {
+      border-left-color: var(--gold);
+      background: #fffdf2;
+    }
+
+    .card.red {
+      border-left-color: var(--red);
+      background: #fff8f9;
+    }
+
+    .side-note {
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      padding: 0.08in;
+      background: var(--panel);
+      box-shadow: 3px 3px 0 var(--teal);
+      font-size: 10.6px;
+    }
+
+    .tiny-label {
+      display: inline-block;
+      background: var(--ink);
+      color: white;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+
+    .code {
+      background: var(--code-bg);
+      border: 1px solid #d8dddd;
+      border-radius: 10px;
+      padding: 0.07in 0.08in;
+      margin: 0.06in 0 0.08in;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10.7px;
+      line-height: 1.28;
+      white-space: pre-wrap;
+    }
+
+    .code .bad {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .code .good {
+      color: var(--teal-dark);
+      font-weight: 800;
+    }
+
+    .why {
+      font-weight: 800;
+      color: var(--teal-dark);
+    }
+
+    ul {
+      margin: 0.04in 0 0.05in 0.20in;
+      padding: 0;
+      font-size: 11.5px;
+    }
+
+    li { margin-bottom: 0.03in; }
+
+    .footer {
+      position: absolute;
+      left: 0.45in;
+      right: 0.45in;
+      bottom: 0.18in;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #d7eeee;
+      padding-top: 0.05in;
+      font-size: 10px;
+      color: var(--soft-ink);
+      font-weight: 700;
+    }
+
+    .mini-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin: 0.06in 0 0.02in;
+    }
+
+    .mini-table th,
+    .mini-table td {
+      border: 1px solid #d9e7e7;
+      padding: 5px 6px;
+      vertical-align: top;
+    }
+
+    .mini-table th {
+      background: #eafbfb;
+      text-align: left;
+      color: var(--ink);
+    }
+
+    .pill {
+      display: inline-block;
+      font-family: "Courier New", Courier, monospace;
+      background: #eef5f5;
+      border: 1px solid #d4dddd;
+      border-radius: 6px;
+      padding: 1px 5px;
+      font-size: 10.7px;
+    }
+
+    @media print {
+      body { background: white; }
+      .handout { width: auto; }
+      .page { margin: 0; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="handout">
+    <section class="page">
+      <header>
+        <div>
+          <h1>Really Quick Java Notes for This Workshop</h1>
+          <div class="subtitle">Indecisive Devices #22738 • Java basics before coding</div>
+        </div>
+        <div class="badge">Page 1 of 2</div>
+      </header>
+
+      <div class="pair">
+        <div class="card">
+          <span class="tiny-label">Big Idea</span>
+          <h2>Java is picky because robots are picky</h2>
+          <p>When we program a robot, Java needs exact instructions. A human might understand “drive the thingy forward,” but a robot needs clear names, symbols, and spelling.</p>
+          <p>Think of Java code like build instructions for a robot pit crew. If one part name is wrong, the crew grabs the wrong part. If one instruction is missing, the robot brain pauses and asks for better punctuation.</p>
+        </div>
+        <div class="empty-note"></div>
+      </div>
+
+      <div class="pair">
+        <div class="card">
+          <h2>Java is case sensitive</h2>
+          <p>Java treats uppercase and lowercase letters as different characters. That means <span class="pill">leftPower</span>, <span class="pill">LeftPower</span>, and <span class="pill">leftpower</span> are three different names.</p>
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Works?</th>
+                <th>Example</th>
+                <th>Why?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>✅ Yes</td>
+                <td><span class="pill">leftPower</span></td>
+                <td>Matches the variable name exactly.</td>
+              </tr>
+              <tr>
+                <td>❌ No</td>
+                <td><span class="pill">LeftPower</span></td>
+                <td>The first letter changed to uppercase.</td>
+              </tr>
+              <tr>
+                <td>❌ No</td>
+                <td><span class="pill">leftpower</span></td>
+                <td>The capital P disappeared.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="empty-note"></div>
+      </div>
+
+      <div class="pair">
+        <div>
+            <p>
+                <div class="card">
+                    <h2>Semicolons: Java’s stop signs</h2>
+                    <p><span class="why">Why use them?</span> A semicolon tells Java, “This instruction is finished.” Without it, Java keeps looking for more and gets confused. That is why many Java commands end with <span class="pill">;</span>.</p>
+                    <div class="code">frontLeftDrive.setPower(leftPower);</div>
+                    <p>That line is one complete instruction: send <span class="pill">leftPower</span> to the front-left motor.</p>
+                </div>
+            </p>
+            <p>
+                <div class="card">
+                    <h2>Curly brackets: code rooms</h2>
+                    <p>Curly brackets create “rooms” for code. A class has a room. Each method has its own smaller room inside the class. Code that belongs to a method must be typed inside that method’s brackets.</p>
+                    <p>Curly brackets also hold decision code, like <span class="pill">if</span> and <span class="pill">else</span>. That is Java’s way of saying, “If this is true, do this. Otherwise, do that.”</p>
+                    <div class="code">if (leftPower &gt; 0) {
+// Do this when leftPower is forward
+} else {
+// Do this when leftPower is not forward
+}</div>
+                </div>
+            </p>
+        </div>
+          <div class="right-stack">
+              <aside class="side-note">
+                  <h3>Why no semicolon after brackets?</h3>
+                  <p>A semicolon ends one complete instruction. A curly bracket starts or ends a block of code, so Java does not need a semicolon right after it.</p>
+                  <div class="code">public class TankDriveExample {
+
+                      }</div>
+                  <h3>Semicolon rule of thumb</h3>
+                  <p>Use a semicolon after a complete command:</p>
+                  <div class="code">double speed = 0.5;</div>
+                  <p>Do not use one when opening a block with <span class="pill">{</span>:</p>
+                  <div class="code">public void loop() {</div>
+              </aside>
+          </div>
+      </div>
+
+      <div class="footer">
+        <span>FTC Team #22738 • Indecisive Devices</span>
+        <span>https://indecisivedevices.github.io</span>
+      </div>
+    </section>
+
+    <section class="page">
+      <header>
+        <div>
+          <h1>Really Quick Java Notes for This Workshop</h1>
+          <div class="subtitle">Variables, classes, methods, and FTC robot code structure</div>
+        </div>
+        <div class="badge">Page 2 of 2</div>
+      </header>
+
+      <div class="pair">
+        <div class="card">
+          <h2>Variables: labeled boxes for robot information</h2>
+          <p><span class="why">Why use them?</span> Robots need to remember information while they run. A variable gives a value a name so we can use it later. In tank drive, variables store joystick power before sending that power to the motors.</p>
+          <p>The word <span class="pill">double</span> means the box stores a number that can have decimals, like <span class="pill">0.5</span>, <span class="pill">1.0</span>, or <span class="pill">-0.25</span>.</p>
+          <div class="code">double leftPower = -gamepad1.left_stick_y;
+double rightPower = -gamepad1.right_stick_y;</div>
+          <p>Translation: “Make two number boxes. Put the left joystick value in one box and the right joystick value in the other.”</p>
+        </div>
+        <aside class="side-note">
+          <h3>Robot memory moment</h3>
+          <p>A variable is not magic. It is a name tag on a value. Instead of saying, “use whatever number came from the left joystick,” we say <span class="pill">leftPower</span>.</p>
+        </aside>
+      </div>
+
+      <div class="pair">
+        <div class="card">
+          <h2>Classes: the robot program’s blueprint</h2>
+          <p>A class is the big container for a Java program. For FTC, your TeleOp code lives inside a class. The class name should match the file name so Android Studio can find everything neatly.</p>
+          <div class="code">public class TankDriveExample extends OpMode {
+
+}</div>
+          <p>The curly brackets mark the beginning and end of the class. Everything for this robot program goes between them.</p>
+        </div>
+        <aside class="side-note">
+          <h3>Code nesting map</h3>
+          <div class="code">class
+ └── method
+      └── instructions</div>
+          <p>Class is the big robot garage. Methods are workbenches. Instructions are the tools on each bench.</p>
+        </aside>
+      </div>
+
+      <div class="pair">
+        <div class="card">
+          <h2>Methods: named jobs inside the class</h2>
+          <p>A method is a named chunk of code that does a job. You can think of a method like a button on a robot control panel. When that method runs, the instructions inside it happen.</p>
+          <div class="code">public void sayRobotReady() {
+    telemetry.addData("Status", "Robot Ready!");
+}</div>
+          <p>The method above has a name: <span class="pill">sayRobotReady</span>. The instructions inside the curly brackets belong to that method.</p>
+        </div>
+        <aside class="side-note">
+          <h3>FTC special methods</h3>
+          <p>In FTC TeleOp programs, two special methods are required by the FTC SDK:</p>
+          <ul>
+            <li><span class="pill">init()</span> runs once when the robot is getting ready.</li>
+            <li><span class="pill">loop()</span> repeats while the robot is active.</li>
+          </ul>
+          <p>These are not random Java words. They are part of how FTC robot programs work.</p>
+        </aside>
+      </div>
+
+      <div class="footer">
+        <span>Java primer supplement • Tank Drive Workshop</span>
+        <span>Print-friendly HTML/CSS</span>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
