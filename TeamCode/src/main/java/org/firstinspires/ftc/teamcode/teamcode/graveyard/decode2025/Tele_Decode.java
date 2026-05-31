@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teamcode.graveyard.decode2025;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "Tele_Decode", group = "Decode")
+@Disabled
 public class Tele_Decode extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();

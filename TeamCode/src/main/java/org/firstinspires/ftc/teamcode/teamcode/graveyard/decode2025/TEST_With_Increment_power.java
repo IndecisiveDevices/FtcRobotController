@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.teamcode.test;
+package org.firstinspires.ftc.teamcode.teamcode.graveyard.decode2025;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -11,9 +12,8 @@ import org.firstinspires.ftc.teamcode.teamcode.mechanism.Lift;
 import org.firstinspires.ftc.teamcode.teamcode.mechanism.MecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-import java.util.List;
-
 @TeleOp(name = "TEST_With_Increment_power", group = "TEST")
+@Disabled
 public class TEST_With_Increment_power extends OpMode {
     MecanumDrive driver = new MecanumDrive();
     Lift lifter = new Lift();

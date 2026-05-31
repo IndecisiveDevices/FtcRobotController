@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.teamcode.graveyard.decode2025;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 // Do a search for "RobotAutoDriveToAprilTagOmni.java" to see what we can copy
 // and paste it here. We have a webcam to use.
 @Autonomous(name = "Auto_Blue_CF", group = "Auto Blue")
+@Disabled
 public class Auto_Blue_CF extends Auto_Blue_ByGoal {
     public Auto_Blue_CF() {
         SHOOTING_TARGET_TAG_ID = BLUE_TAG_ID;

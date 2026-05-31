@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.teamcode.test;
+package org.firstinspires.ftc.teamcode.teamcode.graveyard.decode2025;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -11,6 +12,7 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 
 @TeleOp(name = "ServoTest2025RobotCode_TeleOp", group = "TEST")
+@Disabled
 public class ServoTest2025RobotCode_TeleOp extends OpMode {
 
     NormalizedColorSensor colorSensor0;
