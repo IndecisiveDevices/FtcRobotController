@@ -250,51 +250,44 @@
         </div>
         <div class="badge">Page 1 of 2</div>
       </header>
-
-      <div class="pair">
+      <p>
         <div class="card">
           <span class="tiny-label">Big Idea</span>
           <h2>Java is picky because robots are picky</h2>
           <p>When we program a robot, Java needs exact instructions. A human might understand “drive the thingy forward,” but a robot needs clear names, symbols, and spelling.</p>
           <p>Think of Java code like build instructions for a robot pit crew. If one part name is wrong, the crew grabs the wrong part. If one instruction is missing, the robot brain pauses and asks for better punctuation.</p>
         </div>
-        <div class="empty-note"></div>
+      </p>
+      <div class="card">
+        <h2>Java is case sensitive</h2>
+        <p>Java treats uppercase and lowercase letters as different characters. That means <span class="pill">leftPower</span>, <span class="pill">LeftPower</span>, and <span class="pill">leftpower</span> are three different names.</p>
+        <table class="mini-table">
+          <thead>
+            <tr>
+              <th>Works?</th>
+              <th>Example</th>
+              <th>Why?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>✅ Yes</td>
+              <td><span class="pill">leftPower</span></td>
+              <td>Matches the variable name exactly.</td>
+            </tr>
+            <tr>
+              <td>❌ No</td>
+              <td><span class="pill">LeftPower</span></td>
+              <td>The first letter changed to uppercase.</td>
+            </tr>
+            <tr>
+              <td>❌ No</td>
+              <td><span class="pill">leftpower</span></td>
+              <td>The capital P disappeared.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
-      <div class="pair">
-        <div class="card">
-          <h2>Java is case sensitive</h2>
-          <p>Java treats uppercase and lowercase letters as different characters. That means <span class="pill">leftPower</span>, <span class="pill">LeftPower</span>, and <span class="pill">leftpower</span> are three different names.</p>
-          <table class="mini-table">
-            <thead>
-              <tr>
-                <th>Works?</th>
-                <th>Example</th>
-                <th>Why?</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>✅ Yes</td>
-                <td><span class="pill">leftPower</span></td>
-                <td>Matches the variable name exactly.</td>
-              </tr>
-              <tr>
-                <td>❌ No</td>
-                <td><span class="pill">LeftPower</span></td>
-                <td>The first letter changed to uppercase.</td>
-              </tr>
-              <tr>
-                <td>❌ No</td>
-                <td><span class="pill">leftpower</span></td>
-                <td>The capital P disappeared.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="empty-note"></div>
-      </div>
-
       <div class="pair">
         <div>
             <p>
@@ -311,9 +304,9 @@
                     <p>Curly brackets create “rooms” for code. A class has a room. Each method has its own smaller room inside the class. Code that belongs to a method must be typed inside that method’s brackets.</p>
                     <p>Curly brackets also hold decision code, like <span class="pill">if</span> and <span class="pill">else</span>. That is Java’s way of saying, “If this is true, do this. Otherwise, do that.”</p>
                     <div class="code">if (leftPower &gt; 0) {
-// Do this when leftPower is forward
+  // Do this when leftPower is forward
 } else {
-// Do this when leftPower is not forward
+  // Do this when leftPower is not forward
 }</div>
                 </div>
             </p>
@@ -324,12 +317,11 @@
                   <p>A semicolon ends one complete instruction. A curly bracket starts or ends a block of code, so Java does not need a semicolon right after it.</p>
                   <div class="code">public class TankDriveExample {
 
-                      }</div>
+}</div>
                   <h3>Semicolon rule of thumb</h3>
                   <p>Use a semicolon after a complete command:</p>
                   <div class="code">double speed = 0.5;</div>
-                  <p>Do not use one when opening a block with <span class="pill">{</span>:</p>
-                  <div class="code">public void loop() {</div>
+                  <p>Do not use one when opening a block with <span class="pill">{</span> or closing a block with <span class="pill">}</span></p>
               </aside>
           </div>
       </div>
