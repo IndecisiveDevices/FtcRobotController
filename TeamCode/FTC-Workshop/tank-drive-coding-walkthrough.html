@@ -383,7 +383,7 @@
           <h1>How to Code a Tank Drive</h1>
           <div class="subtitle">FTC Team #22738 Indecisive Devices - Workshop TeleOp walkthrough</div>
         </div>
-        <div class="badge">Page 1 of 5</div>
+        <div class="badge">Page 1 of 4</div>
       </header>
 
       <div class="grid">
@@ -486,7 +486,7 @@ public class TankDrive_Tutorial_Start extends OpMode {
           <h1>Connect Code to Motors</h1>
           <div class="subtitle">First we give each motor a Java name, then we connect it to the robot hardware map.</div>
         </div>
-        <div class="badge">Page 2 of 5</div>
+        <div class="badge">Page 2 of 4</div>
       </header>
 
       <div class="grid">
@@ -516,35 +516,17 @@ private DcMotor rearRightDrive;</div>
         </div>
       </div>
 
-      <div class="grid">
-        <div class="card">
-          <div class="step-title">
-            <div class="step-number">2</div>
-            <h2>Connect the variables in init()</h2>
-          </div>
-          <p>Inside the <span class="pill">init()</span> method, type these four lines:</p>
-          <div class="code">frontLeftDrive = hardwareMap.get(DcMotor.class, "FL");
+      <div class="card">
+        <div class="step-title">
+          <div class="step-number">2</div>
+          <h2>Connect the variables in init()</h2>
+        </div>
+        <p>Inside the <span class="pill">init()</span> method, type these four lines:</p>
+        <div class="code">frontLeftDrive = hardwareMap.get(DcMotor.class, "FL");
 rearLeftDrive = hardwareMap.get(DcMotor.class, "RL");
 frontRightDrive = hardwareMap.get(DcMotor.class, "FR");
 rearRightDrive = hardwareMap.get(DcMotor.class, "RR");</div>
-          <p><span class="pill">hardwareMap.get(DcMotor.class, "FL")</span> asks the FTC robot system to find the DC motor named <span class="pill">FL</span> in the robot configuration. Then it stores that motor in <span class="pill">frontLeftDrive</span> so our code can use it later.</p>
-        </div>
-
-        <aside class="note">
-          <h3>Name check</h3>
-          <p>The letters inside the quotes must match the robot configuration exactly. <span class="pill">"FL"</span> works only if the configured motor name is also <span class="pill">FL</span>.</p>
-          <table>
-            <thead>
-              <tr><th>Java name</th><th>Robot name</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><span class="pill">frontLeftDrive</span></td><td><span class="pill">"FL"</span></td></tr>
-              <tr><td><span class="pill">rearLeftDrive</span></td><td><span class="pill">"RL"</span></td></tr>
-              <tr><td><span class="pill">frontRightDrive</span></td><td><span class="pill">"FR"</span></td></tr>
-              <tr><td><span class="pill">rearRightDrive</span></td><td><span class="pill">"RR"</span></td></tr>
-            </tbody>
-          </table>
-        </aside>
+        <p><span class="pill">hardwareMap.get(DcMotor.class, "FL")</span> asks the FTC robot system to find the DC motor named <span class="pill">FL</span> in the robot configuration. Then it stores that motor in <span class="pill">frontLeftDrive</span> so our code can use it later.</p>
       </div>
 
       <div class="card">
@@ -556,6 +538,20 @@ rearRightDrive = hardwareMap.get(DcMotor.class, "RR");</div>
         <div class="code">frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
 rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);</div>
         <p>Drive motors on opposite sides of the robot are mounted like mirror images. Reversing the left side helps both sides agree that positive power means driving forward when both sticks move the same way.</p>
+      </div>
+
+      <div class="card gold">
+        <h2>Checkpoint: your init() method should look like this</h2>
+        <div class="code">public void init() {
+    frontLeftDrive = hardwareMap.get(DcMotor.class, "FL");
+    rearLeftDrive = hardwareMap.get(DcMotor.class, "RL");
+    frontRightDrive = hardwareMap.get(DcMotor.class, "FR");
+    rearRightDrive = hardwareMap.get(DcMotor.class, "RR");
+
+    frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+    rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
+}</div>
+        <p><span class="pill">init()</span> now finds the four drive motors and fixes the left side direction so forward means forward.</p>
       </div>
 
       <div class="footer">
@@ -571,22 +567,8 @@ rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);</div>
           <h1>Make the Wheels Respond</h1>
           <div class="subtitle">Now the robot can read joysticks and send power to the motors.</div>
         </div>
-        <div class="badge">Page 3 of 5</div>
+        <div class="badge">Page 3 of 4</div>
       </header>
-
-      <div class="card gold">
-        <h2>Checkpoint: your init() method should look like this</h2>
-        <div class="code">public void init() {
-    frontLeftDrive = hardwareMap.get(DcMotor.class, "FL");
-    rearLeftDrive = hardwareMap.get(DcMotor.class, "RL");
-    frontRightDrive = hardwareMap.get(DcMotor.class, "FR");
-    rearRightDrive = hardwareMap.get(DcMotor.class, "RR");
-
-    frontLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-    rearLeftDrive.setDirection(DcMotorSimple.Direction.REVERSE);
-}</div>
-        <p><span class="pill">init()</span> now finds the four drive motors and fixes the left side direction so forward means forward.</p>
-      </div>
 
       <div class="grid">
         <div class="card">
@@ -633,22 +615,6 @@ rearRightDrive.setPower(rightPower);</div>
 telemetry.addData("Right Power", rightPower);</div>
       </div>
 
-      <div class="footer">
-        <span>Step 4 through 6 - Joystick input, motor power, telemetry</span>
-        <span>Left stick controls left wheels. Right stick controls right wheels.</span>
-      </div>
-    </section>
-
-    <section class="page">
-      <header>
-        <img class="logo" src="indecisive-devices-logo.png" alt="Indecisive Devices robot logo" />
-        <div>
-          <h1>Build, Check, Drive</h1>
-          <div class="subtitle">Use this page to compare your finished code and fix common tiny mistakes.</div>
-        </div>
-        <div class="badge">Page 4 of 5</div>
-      </header>
-
       <div class="card gold">
         <h2>Checkpoint: your loop() method should look like this</h2>
         <div class="code">public void loop() {
@@ -667,6 +633,22 @@ telemetry.addData("Right Power", rightPower);</div>
     telemetry.addData("Right Power", rightPower);
 }</div>
       </div>
+
+      <div class="footer">
+        <span>Step 4 through 6 - Joystick input, motor power, telemetry</span>
+        <span>Left stick controls left wheels. Right stick controls right wheels.</span>
+      </div>
+    </section>
+
+    <section class="page">
+      <header>
+        <img class="logo" src="indecisive-devices-logo.png" alt="Indecisive Devices robot logo" />
+        <div>
+          <h1>Build, Check, Drive</h1>
+          <div class="subtitle">Use this page to compare your finished code and fix common tiny mistakes.</div>
+        </div>
+        <div class="badge">Page 4 of 4</div>
+      </header>
 
       <div class="grid">
         <div class="card">
@@ -712,22 +694,6 @@ telemetry.addData("Right Power", rightPower);</div>
           </tbody>
         </table>
       </div>
-
-      <div class="footer">
-        <span>Build checks and troubleshooting</span>
-        <span>https://indecisivedevices.github.io</span>
-      </div>
-    </section>
-
-    <section class="page">
-      <header>
-        <img class="logo" src="indecisive-devices-logo.png" alt="Indecisive Devices robot logo" />
-        <div>
-          <h1>Finished Code Checkpoint</h1>
-          <div class="subtitle">Compare your finished TeleOp to the full example code.</div>
-        </div>
-        <div class="badge">Page 5 of 5</div>
-      </header>
 
       <div class="card gold">
         <h2>Finished code checkpoint</h2>
@@ -777,8 +743,8 @@ public class TankDrive_Tutorial_Start extends OpMode {
       </div>
 
       <div class="footer">
-        <span>Full example reference</span>
-        <span>Compare your code line by line</span>
+        <span>Build checks, troubleshooting, and full code reference</span>
+        <span>https://indecisivedevices.github.io</span>
       </div>
     </section>
   </main>
